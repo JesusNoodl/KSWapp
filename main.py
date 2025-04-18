@@ -6,7 +6,7 @@ from .database import get_db
 
 app = FastAPI()
 
-@app.get("/pupils/")
-def read_pupils(db: Session = Depends(get_db)):
-    pupils = db.query(Pupil).all()
-    return pupils
+@app.get("/person/")
+def read_person(db: Session = Depends(get_db)):
+    person = db.query(person).all()
+    return person
