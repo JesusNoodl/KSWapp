@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, Time, UniqueConstraint, text
+from sqlalchemy import func, BigInteger, Boolean, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, Time, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import OID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import datetime
@@ -53,8 +53,15 @@ class Belt(Base):
     is_stripe: Mapped[bool] = mapped_column(Boolean)
     korean_name: Mapped[str] = mapped_column(Text)
     primary_colour: Mapped[str] = mapped_column(Text)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True))
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    # Automatically set on insert
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    # Can be null initially
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     person: Mapped[List['Person']] = relationship('Person', back_populates='belt_level')
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='belt')
