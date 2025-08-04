@@ -1,0 +1,36 @@
+🗺️ What’s Ahead / What to Learn
+🔹 Immediate Next Steps
+
+    Finalize your database models and FastAPI endpoints
+
+    Finish connecting FastAPI to Supabase
+
+    Use Retool to build:
+
+        Instructor UI to view and update student info
+
+        Admin panels (if needed)
+
+🔹 When You’re Ready for the Parent-Facing App
+
+You can add a frontend like:
+
+    React or Next.js: Full control, great with FastAPI
+
+    Flutter or React Native: If you want a mobile app
+
+    Retool Embed: If you want a quick-and-dirty public view from inside Retool
+
+🧠 Learning Goals for You (at this stage)
+
+    Python + FastAPI best practices
+
+    SQLAlchemy models + CRUD
+
+    Connecting FastAPI to Supabase securely
+
+    API routing and endpoint testing
+
+    Building useful Retool interfaces (drag-and-drop UI)
+
+    Git + deployment with Render
