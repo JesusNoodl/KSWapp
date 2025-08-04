@@ -17,6 +17,7 @@ naming_convention = {
 metadata = MetaData(naming_convention=naming_convention)
 
 DATABASE_URL = os.getenv("SUPABASE_DATABASE_URL")
+print("DATABASE_URL =", repr(DATABASE_URL))
 
 engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
