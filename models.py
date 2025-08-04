@@ -55,7 +55,7 @@ class Belt(Base):
     primary_colour: Mapped[str] = mapped_column(Text)
     # Automatically set on insert
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(),nullable=False
     )
 
     # Can be null initially
