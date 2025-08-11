@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from . import models, schemas, crud
-from .database import SessionLocal, engine
+from KSWapp import models, schemas, crud
+from KSWapp.database import SessionLocal, engine
 from dotenv import load_dotenv
 import os
-from .app.api.v1 import belts
+from KSWapp.app.api.v1 import belts
 
 load_dotenv()  # Load environment variables from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
