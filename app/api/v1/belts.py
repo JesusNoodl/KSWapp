@@ -1,7 +1,7 @@
 # api/belts.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from KSWapp import crud, schemas, database, models
+from app import crud, schemas, database, models
 
 router = APIRouter()
 
