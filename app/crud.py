@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-import models, schemas
+from app import models, schemas
 
 def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
     db_belt = models.Belt(**belt.model_dump())
