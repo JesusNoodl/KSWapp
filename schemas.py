@@ -1,17 +1,20 @@
-from pydantic import BaseModel
+# schemas.py
+from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 from typing import Optional
-import datetime
 
-class BeltCreate(BaseModel):
+class BeltBase(BaseModel):
     name: str
     is_stripe: bool
     korean_name: str
     primary_colour: str
-    created_at: Optional[datetime.datetime] = None
-    modified_at: Optional[datetime.datetime] = None
 
-class BeltResponse(BeltCreate):
+class BeltCreate(BeltBase):
+    pass
+
+class BeltOut(BeltBase):
     id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

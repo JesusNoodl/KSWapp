@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
-import models
-import schemas
+from . import models, schemas
 
-def create_belt(db: Session, belt: BeltCreate) -> models.Belt:
-    db_belt = models.Belt(**belt.dict())
+def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
+    db_belt = models.Belt(**belt.model_dump())
     db.add(db_belt)
     db.commit()
     db.refresh(db_belt)

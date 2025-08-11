@@ -1,15 +1,16 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-import models
-import schemas
-import crud
-from database import SessionLocal, engine
+from . import models, schemas, crud
+from .database import SessionLocal, engine
 from dotenv import load_dotenv
 import os
+from .app.api.v1 import belts
 
 load_dotenv()  # Load environment variables from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 print("Database URL loaded:", DATABASE_URL)
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -21,10 +22,4 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@app.post("/belts/", response_model=schemas.BeltResponse)
-def add_belt_rank(belt: schemas.BeltCreate, db: Session = Depends(get_db)):
-    return crud.create_belt(db=db, belt=belt)
+app.include_router(belts.router, prefix="/belts", tags=["Belts"])
