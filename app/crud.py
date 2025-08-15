@@ -108,6 +108,28 @@ def remove_promotion(db: Session, promotion_id: int):
     if not promotion:
         return "not_found"
     
+    student_id = promotion.student_id
+
     db.delete(promotion)
     db.commit()
-    return "deleted"
+
+    # Find the most recent remaining promotion for this student
+    last_promotion = (
+        db.query(models.Promotions)
+        .filter(models.Promotions.student_id == student_id)
+        .order_by(models.Promotions.promotion_date.desc(), models.Promotions.id.desc())
+        .first()
+    )
+
+    # Update the student's belt_level_id
+    student = db.query(models.Person).filter(models.Person.id == student_id).first()
+    if student:  # Make sure student exists
+        if last_promotion:
+            student.belt_level_id = last_promotion.belt_id
+        else:
+            student.belt_level_id = None  # or lowest belt id if you prefer
+
+        db.commit()
+        db.refresh(student)
+
+    return promotion

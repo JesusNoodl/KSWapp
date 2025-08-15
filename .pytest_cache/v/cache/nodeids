@@ -3,6 +3,10 @@
   "test/test_belts.py::test_get_belt",
   "test/test_belts.py::test_get_belt_not_found",
   "test/test_belts.py::test_get_belts",
+  "test/test_promotion.py::test_delete_promotion",
+  "test/test_promotion.py::test_get_promotion_for_student",
+  "test/test_promotion.py::test_get_promotions",
+  "test/test_promotion.py::test_get_promotions_for_student",
   "test/test_promotion.py::test_set_belt",
   "test/test_promotion.py::test_standard_promotion",
   "test/test_promotion.py::test_tab_promotion"

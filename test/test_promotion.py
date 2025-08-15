@@ -26,8 +26,6 @@ def test_tab_promotion():
     assert response.status_code == 200
     data = response.json()
 
-'''
-
 def test_set_belt():
     payload = {
         "person_id": 15,
@@ -42,7 +40,32 @@ def test_set_belt():
     data = response.json()
 
 def test_delete_promotion():
-    response = client.delete("/promotions/delete_promotion/2")
+    response = client.delete("/promotions/delete_promotion/10")
     print("\nDEBUG Response JSON:", response.json())
     assert response.status_code == 200
     data = response.json()
+'''
+
+def test_get_promotions():
+    response = client.get("/promotions/")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+def test_get_promotions_for_student():
+    response = client.get("/promotions/student/15")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+def test_get_promotion_for_student():
+    response = client.get("/promotions/student/15/promotion/8")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()
+
+
+
+

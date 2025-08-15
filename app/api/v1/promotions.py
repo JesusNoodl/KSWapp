@@ -15,7 +15,7 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/standard_promotions/", response_model=schemas.PromotionOut)
+@router.post("/standard_promotions/", response_model=schemas.PromotionBase)
 def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
     location_id = request.location_id
@@ -39,7 +39,7 @@ def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = 
         )
     return result
 
-@router.post("/tab_promotions/", response_model=schemas.PromotionOut)
+@router.post("/tab_promotions/", response_model=schemas.PromotionBase)
 def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
     location_id = request.location_id
@@ -64,7 +64,7 @@ def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depen
 
     return result
 
-@router.post("/set_belt/", response_model=schemas.PromotionOut)
+@router.post("/set_belt/", response_model=schemas.PromotionBase)
 def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
     location_id = request.location_id
@@ -92,3 +92,30 @@ def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db)):
         )
 
     return {"status": "success", "deleted_promotion": result}
+
+# Get all promotions
+@router.get("/", response_model=list[schemas.PromotionOut])
+def get_promotions(db: Session = Depends(get_db)):
+    return db.query(models.Promotions).all()
+
+# Get promoitions for a student
+@router.get("/student/{student_id}", response_model=list[schemas.PromotionOut])
+def get_promotions_for_student(student_id: int, db: Session = Depends(get_db)):
+    result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id).all()
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Promotions not found", "student_id": student_id}
+        )
+    return result
+
+# Get one promotion for a student
+@router.get("/student/{student_id}/promotion/{promotion_id}", response_model=schemas.PromotionOut)
+def get_promotion_for_student(student_id: int, promotion_id: int, db: Session = Depends(get_db)):
+    result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id, models.Promotions.id == promotion_id).first()
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Promotion not found", "student_id": student_id, "promotion_id": promotion_id}
+        )
+    return result
