@@ -78,3 +78,36 @@ def tab_promotion(db: Session, person_id: int, location_id:int, promotion_date: 
     db.commit()
     db.refresh(promotion)
     return promotion
+
+def set_belt(db: Session, person_id: int, belt_toset_id: int, tabs_toset: int, location_id: int, promotion_date: datetime | None = None):
+    person = db.query(models.Person).filter(models.Person.id == person_id).first()
+    #If the person does not exist, return an error
+    if not person:
+        return "not_found"
+
+    # If promotions_date is not provided, use the current date
+    if promotion_date is None:
+        promotion_date = datetime.now()
+
+    # Log promotion
+    promotion = models.Promotions(
+        student_id=person.id,
+        location_id=location_id,
+        promotion_date=promotion_date,
+        belt_id=belt_toset_id,
+        tabs=tabs_toset
+    )
+    db.add(promotion)
+
+    db.commit()
+    db.refresh(promotion)
+    return promotion
+
+def remove_promotion(db: Session, promotion_id: int):
+    promotion = db.query(models.Promotions).filter(models.Promotions.id == promotion_id).first()
+    if not promotion:
+        return "not_found"
+    
+    db.delete(promotion)
+    db.commit()
+    return "deleted"

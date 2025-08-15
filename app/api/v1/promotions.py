@@ -63,3 +63,32 @@ def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depen
         )
 
     return result
+
+@router.post("/set_belt/", response_model=schemas.PromotionOut)
+def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db)):
+    person_id = request.person_id
+    location_id = request.location_id
+    promotion_date = request.promotion_date
+    tabs_toset = request.tabs
+    belt_toset_id = request.belt_id
+    result = crud.set_belt(db, person_id, belt_toset_id, tabs_toset, location_id, promotion_date)
+
+    if result == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Person not found", "person_id": person_id}
+        )
+
+    return result
+
+@router.delete("/delete_promotion/{promotion_id}")
+def delete_promotion(request: schemas.DeletePromotionRequest, db: Session = Depends(database.get_db)):
+    result = crud.remove_promotion(db, request.promotion_id)
+
+    if result == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Promotion not found", "promotion_id": request.promotion_id}
+        )
+
+    return result
