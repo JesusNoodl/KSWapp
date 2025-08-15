@@ -40,3 +40,9 @@ def test_set_belt():
     print("\nDEBUG Response JSON:", response.json())
     assert response.status_code == 200
     data = response.json()
+
+def test_delete_promotion():
+    response = client.delete("/promotions/delete_promotion/2")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()

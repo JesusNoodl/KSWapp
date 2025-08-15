@@ -82,13 +82,13 @@ def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(databas
     return result
 
 @router.delete("/delete_promotion/{promotion_id}")
-def delete_promotion(request: schemas.DeletePromotionRequest, db: Session = Depends(database.get_db)):
-    result = crud.remove_promotion(db, request.promotion_id)
+def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db)):
+    result = crud.remove_promotion(db, promotion_id)
 
     if result == "not_found":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Promotion not found", "promotion_id": request.promotion_id}
+            detail={"error": "Promotion not found", "promotion_id": promotion_id}
         )
 
-    return result
+    return {"status": "success", "deleted_promotion": result}

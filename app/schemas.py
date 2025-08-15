@@ -36,6 +36,3 @@ class StandardPromotionRequest(BaseModel):
 class SetPromotionRequest(StandardPromotionRequest):
     belt_id: int
     tabs: int
-
-class DeletePromotionRequest(BaseModel):
-    promotion_id: int
