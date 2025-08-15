@@ -19,4 +19,16 @@ class BeltOut(BeltBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class PromotionOut(BaseModel):
+    promotion_date : datetime
+    student_id: int
+    location_id: int
+    belt_id: int
+    tabs: int
 
+    model_config = ConfigDict(from_attributes=True)
+
+class StandardPromotionRequest(BaseModel):
+    person_id: int
+    location_id: int
+    promotion_date: Optional[datetime]

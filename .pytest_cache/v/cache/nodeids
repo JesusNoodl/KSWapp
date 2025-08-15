@@ -2,5 +2,6 @@
   "test/test_belts.py::test_create_belt",
   "test/test_belts.py::test_get_belt",
   "test/test_belts.py::test_get_belt_not_found",
-  "test/test_belts.py::test_get_belts"
+  "test/test_belts.py::test_get_belts",
+  "test/test_promotion.py::test_standard_promotion"
 ]
