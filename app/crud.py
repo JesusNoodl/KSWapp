@@ -140,7 +140,7 @@ def enroll_person(db: Session, person: schemas.PersonCreate) -> models.Person:
     try:
         db_person = models.Person(
             **person.model_dump(),
-            role_id=1,
+            role_id=2,
             belt_level_id=1,
             active=True
         )
