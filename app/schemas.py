@@ -44,3 +44,21 @@ class SetPromotionRequest(StandardPromotionRequest):
     belt_id: int
     tabs: int
 
+class PersonBase(BaseModel):
+    first_name: str
+    last_name: str
+    dob: datetime
+    age_category_id: int
+
+class PersonCreate(PersonBase):
+    pass
+
+class PersonOut(PersonBase):
+    id: int
+    created_at: datetime
+    active: bool
+    role_id: int
+    belt_level_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+

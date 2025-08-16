@@ -133,3 +133,29 @@ def remove_promotion(db: Session, promotion_id: int):
         db.refresh(student)
 
     return promotion
+
+def enroll_person(db: Session, person: schemas.PersonCreate) -> models.Person:
+    db_person = models.Person(
+        **person.model_dump(),
+        role_id=1,        # Default role
+        belt_level_id=1,  # Starting belt
+        active=True
+    )
+
+    # Add both objects before committing
+    db.add(db_person)
+    db.flush()  # ensures db_person.id is available before creating promotion
+
+    promotion = models.Promotions(
+        student_id=db_person.id,
+        promotion_date=datetime.now(),
+        belt_id=db_person.belt_level_id,  # tie directly to the person's belt
+        tabs=0,
+        location_id=1  # fallback default
+    )
+    db.add(promotion)
+
+    db.commit()
+    db.refresh(db_person)
+
+    return db_person
