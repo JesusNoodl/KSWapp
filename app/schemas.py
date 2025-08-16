@@ -75,6 +75,7 @@ class ClassCreate(ClassBase):
     age_categories: list[int]
 
 class ClassOut(ClassBase):
+    id:int
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

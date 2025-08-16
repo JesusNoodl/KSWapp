@@ -1,4 +1,4 @@
-# api/v1/belts.py
+# api/v1/promotions.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import crud, schemas, database, models

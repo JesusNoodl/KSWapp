@@ -3,6 +3,7 @@
   "test/test_belts.py::test_get_belt",
   "test/test_belts.py::test_get_belt_not_found",
   "test/test_belts.py::test_get_belts",
+  "test/test_class.py::test_create_class",
   "test/test_person.py::test_enroll_student",
   "test/test_promotion.py::test_delete_promotion",
   "test/test_promotion.py::test_get_promotion_for_student",

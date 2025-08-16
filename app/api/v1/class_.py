@@ -16,3 +16,15 @@ def get_db():
 @router.post("/", response_model=schemas.ClassOut)
 def create_class(class_: schemas.ClassCreate, db: Session = Depends(get_db)):
     return crud.create_class(db, class_)
+
+@router.get("/{class_id}", response_model=schemas.ClassOut)
+def get_class(class_id: int, db: Session = Depends(get_db)):
+    class_ = db.query(models.Class).filter(models.Class.id == class_id).first()
+    if class_ is None:
+        raise HTTPException(status_code=404, detail="Class not found")
+    return class_
+
+@router.get("/", response_model=list[schemas.ClassOut])
+def get_all_classes(db: Session = Depends(get_db)):
+    return db.query(models.Class).all()
+

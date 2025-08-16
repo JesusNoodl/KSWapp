@@ -1,1 +1,3 @@
-{}
+{
+  "test/test_class.py::test_create_class": true
+}

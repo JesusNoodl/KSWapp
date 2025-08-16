@@ -18,3 +18,23 @@ def test_enroll_student():
     data = response.json()
     print("\nDEBUG Enroll Student Response JSON:", data)
 '''
+
+def test_get_persons():
+    response = client.get("/person/")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+def test_get_person():
+    response = client.get("/person/7")
+    print("\nDEBUG Response JSON:", response.json())
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == 7
+
+def test_get_person_not_found():
+    response = client.get("/person/9999")
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == "Person not found"
