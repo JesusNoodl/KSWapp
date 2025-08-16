@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from app import models, schemas
+from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 
 def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
     db_belt = models.Belt(**belt.model_dump())
@@ -135,27 +137,31 @@ def remove_promotion(db: Session, promotion_id: int):
     return promotion
 
 def enroll_person(db: Session, person: schemas.PersonCreate) -> models.Person:
-    db_person = models.Person(
-        **person.model_dump(),
-        role_id=1,        # Default role
-        belt_level_id=1,  # Starting belt
-        active=True
-    )
+    try:
+        db_person = models.Person(
+            **person.model_dump(),
+            role_id=1,
+            belt_level_id=1,
+            active=True
+        )
+        db.add(db_person)
+        db.flush()
 
-    # Add both objects before committing
-    db.add(db_person)
-    db.flush()  # ensures db_person.id is available before creating promotion
+        promotion = models.Promotions(
+            student_id=db_person.id,
+            promotion_date=datetime.now(),
+            belt_id=db_person.belt_level_id,
+            tabs=0,
+            location_id=1
+        )
+        db.add(promotion)
 
-    promotion = models.Promotions(
-        student_id=db_person.id,
-        promotion_date=datetime.now(),
-        belt_id=db_person.belt_level_id,  # tie directly to the person's belt
-        tabs=0,
-        location_id=1  # fallback default
-    )
-    db.add(promotion)
+        db.commit()
+        db.refresh(db_person)
+        return db_person
 
-    db.commit()
-    db.refresh(db_person)
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Enrollment failed: {str(e)}")
 
-    return db_person
+
