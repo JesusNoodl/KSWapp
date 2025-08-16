@@ -1,6 +1,6 @@
 # schemas.py
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
+from datetime import datetime, time
 from typing import Optional
 
 class BeltBase(BaseModel):
@@ -59,6 +59,23 @@ class PersonOut(PersonBase):
     active: bool
     role_id: int
     belt_level_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ClassBase(BaseModel):
+    title: str
+    description: Optional[str]
+    day: str
+    start_time: time
+    end_time: time
+    location_id: int
+    instructor_id: int
+
+class ClassCreate(ClassBase):
+    age_categories: list[int]
+
+class ClassOut(ClassBase):
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 

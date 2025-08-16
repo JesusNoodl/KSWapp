@@ -4,7 +4,7 @@ from app import models, schemas, crud
 from app.database import SessionLocal, engine
 from dotenv import load_dotenv
 import os
-from app.api.v1 import belts, promotions, person
+from app.api.v1 import belts, promotions, person, class_
 
 load_dotenv()  # Load environment variables from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -25,3 +25,4 @@ def get_db():
 app.include_router(belts.router, prefix="/belts", tags=["Belts"])
 app.include_router(promotions.router, prefix="/promotions", tags=["Promotions"])
 app.include_router(person.router, prefix="/person", tags=["Person"])
+app.include_router(class_.router, prefix="/class", tags=["Class"])

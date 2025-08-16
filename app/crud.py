@@ -163,5 +163,25 @@ def enroll_person(db: Session, person: schemas.PersonCreate) -> models.Person:
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Enrollment failed: {str(e)}")
+    
+def create_class(db: Session, class_: schemas.ClassCreate) -> models.Class:
+    try:
+        db_class = models.Class(**class_.model_dump())
+        db.add(db_class)
+        db.flush()
 
+        for age_category_id in class_.age_categories:
+            age_category_XREF = models.AgeCategoryXREF(
+                class_id=db_class.id,
+                age_category_id=age_category_id
+            )
+            db.add(age_category_XREF)
+        db.flush()  # Ensure the class is created before committing
+        db.commit()
+        db.refresh(db_class)
+        return db_class
+    
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Class creation failed: {str(e)}")
 
