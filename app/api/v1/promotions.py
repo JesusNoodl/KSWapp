@@ -119,3 +119,18 @@ def get_promotion_for_student(student_id: int, promotion_id: int, db: Session = 
             detail={"error": "Promotion not found", "student_id": student_id, "promotion_id": promotion_id}
         )
     return result
+
+# Get the current rank for a student
+@router.get("/current/student/{student_id}/", response_model=schemas.PromotionOut)
+def get_current_promotion_for_student(student_id: int, db: Session = Depends(get_db)):
+    result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id).order_by(models.Promotions.promotion_date.desc()).first()
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Promotion not found", "student_id": student_id}
+        )
+
+    belt_name = db.query(models.Belt).filter(models.Belt.id == result.belt_id).first()
+    response_data = result.__dict__.copy()
+    response_data["belt_name"] = belt_name.name if belt_name else None
+    return response_data

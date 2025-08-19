@@ -28,6 +28,6 @@ def get_person(person_id: int, db: Session = Depends(get_db)):
 def get_all_people(db: Session = Depends(get_db)):
     return db.query(models.Person).all()
 
-@router.put("/person/{person_id}", response_model=schemas.PersonOut)
+@router.put("/{person_id}", response_model=schemas.PersonOut)
 def update_person(person_id: int, person_update: schemas.PersonUpdate, db: Session = Depends(get_db)):
     return crud.update_person(db, person_id, person_update)

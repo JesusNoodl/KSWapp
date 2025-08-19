@@ -32,13 +32,13 @@ class Address(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True))
     house_number: Mapped[Optional[int]] = mapped_column(Integer)
-    house_name: Mapped[Optional[str]] = mapped_column(String)
-    street_name: Mapped[Optional[str]] = mapped_column(String)
-    town: Mapped[Optional[str]] = mapped_column(String)
-    post_code: Mapped[Optional[str]] = mapped_column(String)
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    house_name: Mapped[Optional[str]] = mapped_column(Text)
+    street_name: Mapped[Optional[str]] = mapped_column(Text)
+    town: Mapped[Optional[str]] = mapped_column(Text)
+    post_code: Mapped[Optional[str]] = mapped_column(Text)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     contact: Mapped[List['Contact']] = relationship('Contact', back_populates='address')
     location: Mapped[List['Location']] = relationship('Location', back_populates='address')
@@ -82,12 +82,13 @@ class EventType(Base):
     __tablename__ = 'event_type'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='event_type_pkey'),
+        UniqueConstraint('id', name='event_type_id_key')
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    title: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     event: Mapped[List['Event']] = relationship('Event', back_populates='event_type')
 
@@ -331,18 +332,20 @@ class Event(Base):
     __table_args__ = (
         ForeignKeyConstraint(['event_type_id'], ['event_type.id'], name='event_event_type_id_fkey'),
         ForeignKeyConstraint(['location_id'], ['location.id'], name='event_location_id_fkey'),
-        PrimaryKeyConstraint('id', name='event_pkey')
+        PrimaryKeyConstraint('id', name='event_pkey'),
+        UniqueConstraint('id', name='event_id_key')
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String)
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    title: Mapped[str] = mapped_column(Text)
     event_type_id: Mapped[int] = mapped_column(Integer)
     start_time: Mapped[datetime.time] = mapped_column(Time)
     end_time: Mapped[datetime.time] = mapped_column(Time)
     location_id: Mapped[int] = mapped_column(Integer)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
-    description: Mapped[Optional[str]] = mapped_column(String)
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    event_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped['Location'] = relationship('Location', back_populates='event')
@@ -360,7 +363,7 @@ class Promotions(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
-    promotion_date: Mapped[datetime.datetime] = mapped_column(DateTime)
+    promotion_date: Mapped[datetime.datetime] = mapped_column(DateTime(True))
     belt_id: Mapped[int] = mapped_column(Integer)
     student_id: Mapped[int] = mapped_column(Integer)
     location_id: Mapped[int] = mapped_column(Integer)
@@ -379,10 +382,11 @@ class AgeCategoryXREF(Base):
         ForeignKeyConstraint(['age_category_id'], ['age_category.id'], name='age_category_XREF_age_category_id_fkey'),
         ForeignKeyConstraint(['class_id'], ['class.id'], name='age_category_XREF_class_id_fkey'),
         ForeignKeyConstraint(['event_id'], ['event.id'], name='age_category_XREF_event_id_fkey'),
-        PrimaryKeyConstraint('id', name='age_category_XREF_pkey')
+        PrimaryKeyConstraint('id', name='age_category_XREF_pkey'),
+        UniqueConstraint('id', name='age_category_XREF_id_key')
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     age_category_id: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
     class_id: Mapped[Optional[int]] = mapped_column(Integer)

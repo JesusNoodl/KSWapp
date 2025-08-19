@@ -61,6 +61,7 @@ class PersonOut(PersonBase):
     belt_level_id: int
     student_id: Optional[str] = None
     black_belt_id: Optional[str] = None
+    belt_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
