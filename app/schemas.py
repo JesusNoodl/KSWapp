@@ -106,3 +106,16 @@ class AgeCategoryOut(AgeCategoryBase):
     modified_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
+
+class RoleBase(BaseModel):
+    name: str
+
+class RoleCreate(RoleBase):
+    pass
+
+class RoleOut(RoleBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
