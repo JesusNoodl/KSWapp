@@ -65,7 +65,7 @@ class PersonOut(PersonBase):
 class PersonUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    date_of_birth: Optional[datetime] = None
+    dob: Optional[datetime] = None
     age_category_id: Optional[int] =None
     role_id: Optional[int] = None
     active: Optional[bool] = None
