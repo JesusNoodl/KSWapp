@@ -80,3 +80,15 @@ class ClassOut(ClassBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class AgeCategoryBase(BaseModel):
+    cat_name: str
+
+class AgeCategoryCreate(AgeCategoryBase):
+    pass
+
+class AgeCategoryOut(AgeCategoryBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)

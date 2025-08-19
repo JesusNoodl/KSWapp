@@ -52,6 +52,8 @@ class AgeCategory(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     cat_name: Mapped[str] = mapped_column(String)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     person: Mapped[List['Person']] = relationship('Person', back_populates='age_category')
     age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='age_category')
