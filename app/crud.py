@@ -191,4 +191,23 @@ def create_class(db: Session, class_: schemas.ClassCreate) -> models.Class:
             detail=f"Class creation failed: {str(e)}"
         )
 
+def update_person(db: Session, person_id: int, person_update: schemas.PersonUpdate) -> models.Person:
+    try:
+        db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
+        if not db_person:
+            raise HTTPException(status_code=404, detail="Person not found")
 
+        # Only update fields provided
+        update_data = person_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_person, key, value)
+
+        db.add(db_person)
+        db.commit()
+        db.refresh(db_person)
+
+        return db_person
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
