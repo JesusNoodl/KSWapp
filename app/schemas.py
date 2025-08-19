@@ -119,3 +119,20 @@ class RoleOut(RoleBase):
     modified_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
+
+class LocationBase(BaseModel):
+    title: str
+    is_dojang: bool
+    instructor_id: Optional[int]
+    address_id: Optional[int]
+
+
+class LocationCreate(LocationBase):
+    pass
+
+class LocationOut(LocationBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
