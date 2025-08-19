@@ -197,10 +197,12 @@ def update_person(db: Session, person_id: int, person_update: schemas.PersonUpda
         if not db_person:
             raise HTTPException(status_code=404, detail="Person not found")
 
-        # Only update fields provided
         update_data = person_update.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_person, key, value)
+
+        # Set modified date
+        db_person.modified_at = datetime.now()
 
         db.add(db_person)
         db.commit()
