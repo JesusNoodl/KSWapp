@@ -30,4 +30,3 @@ app.include_router(age_category.router, prefix="/age_category", tags=["Age Categ
 app.include_router(role.router, prefix="/role", tags=["Role"])
 app.include_router(location.router, prefix="/location", tags=["Location"])
 app.include_router(event.router, prefix="/event", tags=["Event"])
-
