@@ -213,3 +213,10 @@ def update_person(db: Session, person_id: int, person_update: schemas.PersonUpda
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+
+def create_location(db: Session, location: schemas.LocationCreate) -> models.Location:
+    db_location = models.Location(**location.model_dump())
+    db.add(db_location)
+    db.commit()
+    db.refresh(db_location)
+    return db_location

@@ -13,6 +13,11 @@ def get_db():
     finally:
         db.close()
 
+# Create a new location
+@router.post("/", response_model=schemas.LocationOut)
+def create_location(location: schemas.LocationCreate, db: Session = Depends(database.get_db)):
+    return crud.create_location(db, location)
+
 # Get all locations
 @router.get("/", response_model=list[schemas.LocationOut])
 def get_locations(db: Session = Depends(get_db)):

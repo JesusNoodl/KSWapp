@@ -18,10 +18,10 @@ def get_db():
 def get_age_categories(db: Session = Depends(get_db)):
     return db.query(models.AgeCategory).all()
 
-# Get age categories
-@router.get("/{age_categorie}", response_model=schemas.AgeCategoryOut)
-def get_age_categorie(age_categorie: int, db: Session = Depends(get_db)):
-    age_category = db.query(models.AgeCategory).filter(models.AgeCategory.id == age_categorie).first()
+# Get an age category
+@router.get("/{age_category_id}", response_model=schemas.AgeCategoryOut)
+def get_age_category(age_category_id: int, db: Session = Depends(get_db)):
+    age_category = db.query(models.AgeCategory).filter(models.AgeCategory.id == age_category_id).first()
     if age_category is None:
         raise HTTPException(status_code=404, detail="Age category not found")
     return age_category

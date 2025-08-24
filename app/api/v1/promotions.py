@@ -15,6 +15,7 @@ def get_db():
     finally:
         db.close()
 
+# Standard promotion
 @router.post("/standard_promotions/", response_model=schemas.PromotionBase)
 def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
@@ -39,6 +40,7 @@ def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = 
         )
     return result
 
+# Tab a promotion
 @router.post("/tab_promotions/", response_model=schemas.PromotionBase)
 def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
@@ -64,6 +66,7 @@ def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depen
 
     return result
 
+# Set a specific belt for a student
 @router.post("/set_belt/", response_model=schemas.PromotionBase)
 def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db)):
     person_id = request.person_id
@@ -81,6 +84,7 @@ def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(databas
 
     return result
 
+# Delete a promotion
 @router.delete("/delete_promotion/{promotion_id}")
 def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db)):
     result = crud.remove_promotion(db, promotion_id)

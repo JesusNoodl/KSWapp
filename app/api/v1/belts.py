@@ -13,6 +13,7 @@ def get_db():
     finally:
         db.close()
 
+# Create a new belt rank
 @router.post("/", response_model=schemas.BeltOut)
 def create_belt(belt: schemas.BeltCreate, db: Session = Depends(database.get_db)):
     return crud.create_belt(db, belt)

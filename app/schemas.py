@@ -137,3 +137,25 @@ class LocationOut(LocationBase):
     modified_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
+
+class EventBase(BaseModel):
+    title: str
+    description: Optional[str]
+    event_date: datetime
+    start_time: time
+    end_time: time
+    location_id: Optional[int]
+    event_type: int
+
+class EventCreate(EventBase):
+    age_categories: list[int]
+
+class EventUpdate(EventBase):
+    age_categories: Optional[list[int]] = None
+
+class EventOut(EventBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
