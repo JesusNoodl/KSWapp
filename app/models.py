@@ -32,7 +32,7 @@ class Address(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     house_number: Mapped[Optional[int]] = mapped_column(Integer)
     house_name: Mapped[Optional[str]] = mapped_column(Text)
     street_name: Mapped[Optional[str]] = mapped_column(Text)
@@ -341,14 +341,14 @@ class Event(Base):
     event_type_id: Mapped[int] = mapped_column(Integer)
     start_time: Mapped[datetime.time] = mapped_column(Time)
     end_time: Mapped[datetime.time] = mapped_column(Time)
-    location_id: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     event_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     description: Mapped[Optional[str]] = mapped_column(Text)
+    location_id: Mapped[Optional[int]] = mapped_column(Integer)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
-    location: Mapped['Location'] = relationship('Location', back_populates='event')
+    location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
     age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event')
 
 

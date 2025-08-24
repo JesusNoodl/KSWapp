@@ -145,7 +145,7 @@ class EventBase(BaseModel):
     start_time: time
     end_time: time
     location_id: Optional[int]
-    event_type: int
+    event_type_id: int
 
 class EventCreate(EventBase):
     age_categories: list[int]

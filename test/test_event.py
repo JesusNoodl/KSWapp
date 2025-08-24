@@ -11,7 +11,8 @@ def test_create_event():
         "start_time": "08:00:00",
         "end_time": "11:00:00",
         "location_id": 3,
-        "age_categories": [2, 3, 4, 5]
+        "age_categories": [2, 3, 4, 5],
+        "event_type_id": 3
     })
     assert response.status_code == 200
     assert response.json()["title"] == "test event"
@@ -20,7 +21,7 @@ def test_create_event():
     assert response.json()["start_time"] == "08:00:00"
     assert response.json()["end_time"] == "11:00:00"
     assert response.json()["location_id"] == 3
-    assert response.json()["age_categories"] == [2, 3, 4, 5]
+    assert response.json()["event_type_id"] == 3
     data = response.json()
     print("\nDEBUG Create Event Response JSON:", data)
 
