@@ -220,3 +220,30 @@ def create_location(db: Session, location: schemas.LocationCreate) -> models.Loc
     db.commit()
     db.refresh(db_location)
     return db_location
+
+def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
+    try:
+        # exclude age_categories when creating Class
+        event_data = event.model_dump(exclude={"age_categories"})
+        db_event = models.Event(**event_data)
+        db.add(db_event)
+        db.flush()  # get db_event.id
+
+        # Create XREF rows for each age_category_id
+        for age_category_id in event.age_categories:
+            age_category_XREF = models.AgeCategoryXREF(
+                event_id=db_event.id,
+                age_category_id=age_category_id
+            )
+            db.add(age_category_XREF)
+
+        db.commit()
+        db.refresh(db_event)
+        return db_event
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Event creation failed: {str(e)}"
+        )
