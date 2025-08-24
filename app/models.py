@@ -323,7 +323,7 @@ class Class(Base):
 
     instructor: Mapped[Optional['Person']] = relationship('Person', back_populates='class_')
     location: Mapped['Location'] = relationship('Location', back_populates='class_')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_')
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_', cascade="all, delete-orphan")
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='class_')
 
 
@@ -349,7 +349,7 @@ class Event(Base):
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event')
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event', cascade="all, delete-orphan")
 
 
 class Promotions(Base):

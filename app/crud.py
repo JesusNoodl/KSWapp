@@ -247,3 +247,21 @@ def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
             status_code=500,
             detail=f"Event creation failed: {str(e)}"
         )
+    
+def delete_event(db: Session, event_id: int):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        return "not_found"
+    
+    db.delete(event)
+    db.commit()
+    return event
+
+def delete_class(db: Session, class_id: int):
+    class_ = db.query(models.Class).filter(models.Class.id == class_id).first()
+    if not class_:
+        return "not_found"
+
+    db.delete(class_)
+    db.commit()
+    return class_

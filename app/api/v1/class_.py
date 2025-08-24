@@ -1,5 +1,5 @@
 # api/v1/class.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import crud, schemas, database, models
 
@@ -30,4 +30,19 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[schemas.ClassOut])
 def get_all_classes(db: Session = Depends(get_db)):
     return db.query(models.Class).all()
+
+# Delete a class
+@router.delete("/class/{class_id}")
+def delete_class(class_id: int, db: Session = Depends(database.get_db)):
+    result = crud.delete_class(db, class_id)
+
+    if result == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "Class not found", "class_id": class_id}
+        )
+
+    return {"status": "success", "deleted_class": result}
+
+    return {"status": "success", "deleted_promotion": result}
 
