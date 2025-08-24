@@ -1,3 +1,7 @@
 {
-  "test/test_class.py::test_create_class": true
+  "test/test_class.py::test_create_class": true,
+  "test/test_event.py::test_create_event": true,
+  "test/test_event.py::test_get_events": true,
+  "test/test_event.py::test_get_event": true,
+  "test/test_event.py::test_get_event_not_found": true
 }
