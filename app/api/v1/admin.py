@@ -1,7 +1,7 @@
 import requests
 import os
 from fastapi import APIRouter, Depends, HTTPException
-from KSWapp.app.api.v1.security import get_current_user  # from earlier JWT logic
+from app.api.v1.security import get_current_user  # from earlier JWT logic
 
 SUPABASE_PROJECT_URL = os.getenv("SUPABASE_PROJECT_URL")  # e.g. https://xxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
