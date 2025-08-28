@@ -14,7 +14,7 @@ def get_db():
         db.close()
 
 # Create a new event
-@router.post("/", response_model=schemas.EventOut)
+@router.post("/", response_model=schemas.EventOut,)
 def create_event(event: schemas.EventCreate, db: Session = Depends(get_db)):
     return crud.create_event(db, event)
 
