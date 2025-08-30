@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from dependencies import get_current_user
+from app.api.v1.dependencies import get_current_user
 from database import get_db
 from crud import get_user_by_email, update_user_role
 import database
