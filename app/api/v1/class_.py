@@ -49,5 +49,12 @@ def delete_class(class_id: int, db: Session = Depends(database.get_db), current_
 
     return {"status": "success", "deleted_class": result}
 
-    return {"status": "success", "deleted_promotion": result}
-
+# Edit a class
+@router.put("/{class_id}", response_model=schemas.ClassOut)
+def update_class(class_id: int, class_: schemas.ClassUpdate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return crud.update_class(db, class_id, class_)

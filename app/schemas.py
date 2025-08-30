@@ -95,6 +95,16 @@ class ClassOut(ClassBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+class ClassUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    day: Optional[str] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    location_id: Optional[int] = None
+    instructor_id: Optional[int] = None
+    age_categories: Optional[list[int]] = None
+
 class AgeCategoryBase(BaseModel):
     cat_name: str
 

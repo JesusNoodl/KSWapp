@@ -8,16 +8,6 @@ from app.crud import get_user_by_email
 
 router = APIRouter()
 
-# Create a new belt rank
-@router.post("/", response_model=schemas.BeltOut)
-def create_belt(belt: schemas.BeltCreate, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return crud.create_belt(db, belt)
-
 # Get all belts
 @router.get("/", response_model=list[schemas.BeltOut])
 def get_belts(db: Session = Depends(get_db)):
