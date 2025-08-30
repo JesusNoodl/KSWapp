@@ -39,8 +39,8 @@ def admin_token():
 
 def test_get_person_admin(admin_token):
     headers = {"Authorization": f"Bearer {admin_token}"}
-    response = client.get("/person/1", headers=headers)  # Replace 1 with a valid person_id
+    response = client.get("/person/7", headers=headers)  
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
-    assert "name" in data  # depends on your PersonOut schema
+    assert "first_name" in data  # depends on your PersonOut schema

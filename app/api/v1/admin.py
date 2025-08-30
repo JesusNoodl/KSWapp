@@ -1,19 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.api.v1.dependencies import get_current_user
-from database import get_db
-from crud import get_user_by_email, update_user_role
-import database
+from app.database import get_db
+from app.crud import get_user_by_email, update_user_role
 
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/promote")
 def promote_user(email: str, new_role: str, current_user=Depends(get_current_user), db: Session = Depends(get_db)):

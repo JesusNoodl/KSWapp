@@ -2,16 +2,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import crud, schemas, database, models
+from app.database import get_db
 
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Get all age categories
 @router.get("/", response_model=list[schemas.AgeCategoryOut])
