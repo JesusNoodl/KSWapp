@@ -265,7 +265,3 @@ def delete_class(db: Session, class_id: int):
     db.delete(class_)
     db.commit()
     return class_
-
-def get_uuid_from_email(db: Session, email: str | None = None):
-    user = db.query(models.Users).filter(models.Users.email == email).first()
-    return user.id if user else None
