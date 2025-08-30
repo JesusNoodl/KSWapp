@@ -1,5 +1,6 @@
 [
   "test/promote_to_admin.py::test_promote_user",
+  "test/test_auth.py::test_get_person_admin",
   "test/test_belts.py::test_create_belt",
   "test/test_belts.py::test_get_belt",
   "test/test_belts.py::test_get_belt_not_found",

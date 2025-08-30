@@ -2,20 +2,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import crud, schemas, database, models
+from app.database import get_db
+from app.api.v1.dependencies import get_current_user
+from app.crud import get_user_by_email
 
 router = APIRouter()
 
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # Create a new class
 @router.post("/", response_model=schemas.ClassOut)
-def create_class(class_: schemas.ClassCreate, db: Session = Depends(get_db)):
+def create_class(class_: schemas.ClassCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return crud.create_class(db, class_)
 
 # Get a class by ID
@@ -33,7 +33,12 @@ def get_all_classes(db: Session = Depends(get_db)):
 
 # Delete a class
 @router.delete("/class/{class_id}")
-def delete_class(class_id: int, db: Session = Depends(database.get_db)):
+def delete_class(class_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     result = crud.delete_class(db, class_id)
 
     if result == "not_found":

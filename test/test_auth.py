@@ -5,13 +5,14 @@ from main import app  # Adjust if your FastAPI app is elsewhere
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Load environment variables from .env
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Load env vars from project root .env (one dir up from test/)
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")  # ✅ use this instead of DATABASE_URL
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 ADMIN_EMAIL = "max.moxey-hallam@outlook.com"
 ADMIN_PASSWORD = "admin123"
-
 
 client = TestClient(app)
 
@@ -21,7 +22,7 @@ def get_jwt(email: str, password: str) -> str:
     Logs in via Supabase Auth and returns the JWT access_token.
     """
     resp = requests.post(
-        f"{DATABASE_URL}/auth/v1/token?grant_type=password",
+        f"{SUPABASE_URL}/auth/v1/token?grant_type=password",  # ✅ fixed
         headers={
             "apikey": SUPABASE_ANON_KEY,
             "Content-Type": "application/json"
@@ -44,3 +45,4 @@ def test_get_person_admin(admin_token):
     data = response.json()
     assert "id" in data
     assert "first_name" in data  # depends on your PersonOut schema
+    print(data)
