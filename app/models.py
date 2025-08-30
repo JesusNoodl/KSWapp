@@ -1,9 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, Uuid, text
 from sqlalchemy.dialects.postgresql import OID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import datetime
+import uuid
 
 class Base(DeclarativeBase):
     pass
@@ -175,6 +176,17 @@ class Role(Base):
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
 
     person: Mapped[List['Person']] = relationship('Person', back_populates='role')
+
+
+class Users(Base):
+    __tablename__ = 'users'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='users_pkey'),
+        {'comment': 'Profile data for each user.'}
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, comment='References the internal Supabase Auth user.')
+    email: Mapped[Optional[str]] = mapped_column(Text)
 
 
 class Account(Base):

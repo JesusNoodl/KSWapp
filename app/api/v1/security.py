@@ -3,7 +3,7 @@ from jose import jwt
 import httpx
 from fastapi.security import OAuth2PasswordBearer
 
-SUPABASE_PROJECT_ID = "your-project-ref"
+SUPABASE_PROJECT_ID = "blqtfxldzdxzsfmtafzi"
 SUPABASE_JWKS_URL = f"https://{SUPABASE_PROJECT_ID}.supabase.co/auth/v1/jwks"
 
 _jwks = None
