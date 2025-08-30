@@ -10,21 +10,6 @@ class Base(DeclarativeBase):
     pass
 
 
-class AccountRole(Base):
-    __tablename__ = 'account_role'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='login_role_pkey'),
-        UniqueConstraint('id', name='login_role_id_key')
-    )
-
-    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
-    name: Mapped[str] = mapped_column(String)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
-
-    account: Mapped[List['Account']] = relationship('Account', back_populates='account_role')
-
-
 class Address(Base):
     __tablename__ = 'address'
     __table_args__ = (
@@ -186,27 +171,34 @@ class Users(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, comment='References the internal Supabase Auth user.')
+    role: Mapped[str] = mapped_column(Text, server_default=text("'user'::text"))
     email: Mapped[Optional[str]] = mapped_column(Text)
 
+    user_person: Mapped[List['UserPerson']] = relationship('UserPerson', back_populates='user')
 
-class Account(Base):
-    __tablename__ = 'account'
+
+class Contact(Base):
+    __tablename__ = 'contact'
     __table_args__ = (
-        ForeignKeyConstraint(['account_role_id'], ['account_role.id'], name='account_account_role_id_fkey'),
-        PrimaryKeyConstraint('id', name='login_pkey'),
-        UniqueConstraint('email', name='login_username_key')
+        ForeignKeyConstraint(['address_id'], ['address.id'], name='contact_address_id_fkey'),
+        PrimaryKeyConstraint('id', name='contact_pkey'),
+        UniqueConstraint('id', name='contact_id_key')
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String)
-    password_hash: Mapped[str] = mapped_column(String)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
-    account_role_id: Mapped[Optional[int]] = mapped_column(Integer)
+    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    account_id: Mapped[int] = mapped_column(Integer)
+    is_primary: Mapped[bool] = mapped_column(Boolean)
+    first_name: Mapped[str] = mapped_column(Text)
+    second_name: Mapped[str] = mapped_column(Text)
+    primary_phone_number: Mapped[int] = mapped_column(BigInteger)
+    relation: Mapped[str] = mapped_column(Text)
+    address_id: Mapped[int] = mapped_column(Integer)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    secondary_phone_number: Mapped[Optional[int]] = mapped_column(BigInteger)
+    email: Mapped[Optional[str]] = mapped_column(Text)
 
-    account_role: Mapped[Optional['AccountRole']] = relationship('AccountRole', back_populates='account')
-    account_person: Mapped[List['AccountPerson']] = relationship('AccountPerson', back_populates='account')
-    contact: Mapped[List['Contact']] = relationship('Contact', back_populates='account')
+    address: Mapped['Address'] = relationship('Address', back_populates='contact')
 
 
 class Person(Base):
@@ -236,56 +228,11 @@ class Person(Base):
     age_category: Mapped[Optional['AgeCategory']] = relationship('AgeCategory', back_populates='person')
     belt_level: Mapped[Optional['Belt']] = relationship('Belt', back_populates='person')
     role: Mapped['Role'] = relationship('Role', back_populates='person')
-    account_person: Mapped[List['AccountPerson']] = relationship('AccountPerson', back_populates='person')
     location: Mapped[List['Location']] = relationship('Location', back_populates='instructor')
+    user_person: Mapped[List['UserPerson']] = relationship('UserPerson', back_populates='person')
     class_: Mapped[List['Class']] = relationship('Class', back_populates='instructor')
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='student')
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='person')
-
-
-class AccountPerson(Base):
-    __tablename__ = 'account_person'
-    __table_args__ = (
-        ForeignKeyConstraint(['account_id'], ['account.id'], name='account_person_account_id_fkey'),
-        ForeignKeyConstraint(['person_id'], ['person.id'], name='account_person_person_id_fkey'),
-        PrimaryKeyConstraint('id', name='account_person_pkey'),
-        UniqueConstraint('id', name='account_person_id_key')
-    )
-
-    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
-    person_id: Mapped[int] = mapped_column(Integer)
-    account_id: Mapped[int] = mapped_column(Integer)
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-
-    account: Mapped['Account'] = relationship('Account', back_populates='account_person')
-    person: Mapped['Person'] = relationship('Person', back_populates='account_person')
-
-
-class Contact(Base):
-    __tablename__ = 'contact'
-    __table_args__ = (
-        ForeignKeyConstraint(['account_id'], ['account.id'], name='contact_account_id_fkey'),
-        ForeignKeyConstraint(['address_id'], ['address.id'], name='contact_address_id_fkey'),
-        PrimaryKeyConstraint('id', name='contact_pkey'),
-        UniqueConstraint('id', name='contact_id_key')
-    )
-
-    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
-    account_id: Mapped[int] = mapped_column(Integer)
-    is_primary: Mapped[bool] = mapped_column(Boolean)
-    first_name: Mapped[str] = mapped_column(Text)
-    second_name: Mapped[str] = mapped_column(Text)
-    primary_phone_number: Mapped[int] = mapped_column(BigInteger)
-    relation: Mapped[str] = mapped_column(Text)
-    address_id: Mapped[int] = mapped_column(Integer)
-    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    secondary_phone_number: Mapped[Optional[int]] = mapped_column(BigInteger)
-    email: Mapped[Optional[str]] = mapped_column(Text)
-
-    account: Mapped['Account'] = relationship('Account', back_populates='contact')
-    address: Mapped['Address'] = relationship('Address', back_populates='contact')
 
 
 class Location(Base):
@@ -312,6 +259,24 @@ class Location(Base):
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='location')
 
 
+class UserPerson(Base):
+    __tablename__ = 'user_person'
+    __table_args__ = (
+        ForeignKeyConstraint(['person_id'], ['person.id'], name='user_person_person_id_fkey'),
+        ForeignKeyConstraint(['user_id'], ['users.id'], name='user_person_user_id_fkey'),
+        PrimaryKeyConstraint('id', name='user_person_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    person_id: Mapped[int] = mapped_column(Integer)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+
+    person: Mapped['Person'] = relationship('Person', back_populates='user_person')
+    user: Mapped['Users'] = relationship('Users', back_populates='user_person')
+
+
 class Class(Base):
     __tablename__ = 'class'
     __table_args__ = (
@@ -335,7 +300,7 @@ class Class(Base):
 
     instructor: Mapped[Optional['Person']] = relationship('Person', back_populates='class_')
     location: Mapped['Location'] = relationship('Location', back_populates='class_')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_', cascade="all, delete-orphan")
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_')
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='class_')
 
 
@@ -361,7 +326,7 @@ class Event(Base):
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event', cascade="all, delete-orphan")
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event')
 
 
 class Promotions(Base):

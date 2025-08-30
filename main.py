@@ -4,8 +4,7 @@ from app import models, schemas, crud
 from app.database import SessionLocal, engine
 from dotenv import load_dotenv
 import os
-from app.api.v1 import belts, promotions, person, class_, age_category, role, location, event, admin, security
-from app.api.v1.security import get_current_user
+from app.api.v1 import belts, promotions, person, class_, age_category, role, location, event
 
 load_dotenv()  # Load environment variables from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -31,11 +30,3 @@ app.include_router(age_category.router, prefix="/age_category", tags=["Age Categ
 app.include_router(role.router, prefix="/role", tags=["Role"])
 app.include_router(location.router, prefix="/location", tags=["Location"])
 app.include_router(event.router, prefix="/event", tags=["Event"])
-app.include_router(admin.router, prefix="/admin", tags=["Admin"])
-
-@app.get("/protected")
-async def protected_route(user=Depends(get_current_user)):
-    return {
-        "message": "You are authenticated!",
-        "user": user  # includes sub (user_id), email, etc.
-    }
