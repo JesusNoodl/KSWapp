@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import crud, schemas, database, models
+from dependencies import get_current_user
+from admin import get_user_by_email
 
 router = APIRouter()
 
@@ -15,12 +17,22 @@ def get_db():
 
 # Enroll a new student
 @router.post("/enroll", response_model=schemas.PersonOut)
-def enroll_student(person: schemas.PersonCreate, db: Session = Depends(get_db)):
+def enroll_student(person: schemas.PersonCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return crud.enroll_person(db, person)
 
 # Get a student by ID
 @router.get("/{person_id}", response_model=schemas.PersonOut)
-def get_person(person_id: int, db: Session = Depends(get_db)):
+def get_person(person_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     person = db.query(models.Person).filter(models.Person.id == person_id).first()
     if person is None:
         raise HTTPException(status_code=404, detail="Person not found")
