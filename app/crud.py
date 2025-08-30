@@ -3,6 +3,7 @@ from datetime import datetime
 from app import models, schemas
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+import uuid
 
 def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
     db_belt = models.Belt(**belt.model_dump())
@@ -265,3 +266,15 @@ def delete_class(db: Session, class_id: int):
     db.delete(class_)
     db.commit()
     return class_
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.Users).filter(models.Users.email == email).first()
+
+def update_user_role(db: Session, user_id: uuid.UUID, new_role: str):
+    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+    if not user:
+        return "not_found"
+    user.role = new_role
+    db.commit()
+    db.refresh(user)
+    return user

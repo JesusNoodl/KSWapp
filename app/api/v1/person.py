@@ -1,19 +1,12 @@
 # api/v1/person.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import crud, schemas, database, models
+from app import crud, schemas, models
 from app.api.v1.dependencies import get_current_user
-from app.api.v1.admin import get_user_by_email
+from app.crud import get_user_by_email
+from app.database import get_db
 
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Enroll a new student
 @router.post("/enroll", response_model=schemas.PersonOut)
