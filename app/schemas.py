@@ -152,9 +152,8 @@ class LocationOut(LocationBase):
 class EventBase(BaseModel):
     title: str
     description: Optional[str]
-    event_date: datetime
-    start_time: time
-    end_time: time
+    event_start: datetime
+    event_end: datetime
     location_id: Optional[int]
     event_type_id: int
 

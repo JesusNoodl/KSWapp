@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, Uuid, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Date, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, Uuid, text
 from sqlalchemy.dialects.postgresql import OID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import datetime
@@ -318,7 +318,6 @@ class Class(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     title: Mapped[str] = mapped_column(String)
-    day: Mapped[str] = mapped_column(Text)
     start_time: Mapped[datetime.time] = mapped_column(Time)
     end_time: Mapped[datetime.time] = mapped_column(Time)
     location_id: Mapped[int] = mapped_column(Integer)
@@ -326,13 +325,17 @@ class Class(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
     day_number: Mapped[int] = mapped_column(Integer)
     description: Mapped[Optional[str]] = mapped_column(String)
+    day: Mapped[Optional[str]] = mapped_column(Text)
     instructor_id: Mapped[Optional[int]] = mapped_column(Integer)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
+    active_from: Mapped[Optional[datetime.date]] = mapped_column(Date)
+    active_to: Mapped[Optional[datetime.date]] = mapped_column(Date)
 
     instructor: Mapped[Optional['Person']] = relationship('Person', back_populates='class_')
     location: Mapped['Location'] = relationship('Location', back_populates='class_')
     age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_', cascade="all, delete-orphan")
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='class_')
+    class_exception: Mapped[List['ClassException']] = relationship('ClassException', back_populates='class_')
 
 
 class Event(Base):
@@ -347,13 +350,13 @@ class Event(Base):
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     title: Mapped[str] = mapped_column(Text)
     event_type_id: Mapped[int] = mapped_column(Integer)
-    start_time: Mapped[datetime.time] = mapped_column(Time)
-    end_time: Mapped[datetime.time] = mapped_column(Time)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
-    event_date: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=text('true'))
     description: Mapped[Optional[str]] = mapped_column(Text)
     location_id: Mapped[Optional[int]] = mapped_column(Integer)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    event_start: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    event_end: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
@@ -423,3 +426,21 @@ class Attendance(Base):
 
     class_: Mapped[Optional['Class']] = relationship('Class', back_populates='attendance')
     person: Mapped['Person'] = relationship('Person', back_populates='attendance')
+
+
+class ClassException(Base):
+    __tablename__ = 'class_exception'
+    __table_args__ = (
+        ForeignKeyConstraint(['class_id'], ['class.id'], name='class_exception_class_id_fkey'),
+        PrimaryKeyConstraint('id', name='class_exception_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    date: Mapped[datetime.date] = mapped_column(Date)
+    cancelled: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    class_id: Mapped[Optional[int]] = mapped_column(Integer)
+    note: Mapped[Optional[str]] = mapped_column(Text)
+
+    class_: Mapped[Optional['Class']] = relationship('Class', back_populates='class_exception')
