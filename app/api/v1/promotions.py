@@ -13,10 +13,17 @@ router = APIRouter()
 # Standard promotion
 @router.post("/standard_promotions/", response_model=schemas.PromotionBase)
 def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
@@ -43,10 +50,17 @@ def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = 
 # Tab a promotion
 @router.post("/tab_promotions/", response_model=schemas.PromotionBase)
 def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
@@ -74,10 +88,17 @@ def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depen
 # Set a specific belt for a student
 @router.post("/set_belt/", response_model=schemas.PromotionBase)
 def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
@@ -97,10 +118,17 @@ def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(databas
 # Delete a promotion
 @router.delete("/delete_promotion/{promotion_id}")
 def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     result = crud.remove_promotion(db, promotion_id)
 
@@ -115,10 +143,17 @@ def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db), 
 # Get all promotions
 @router.get("/", response_model=list[schemas.PromotionOut])
 def get_promotions(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return db.query(models.Promotions).all()
 

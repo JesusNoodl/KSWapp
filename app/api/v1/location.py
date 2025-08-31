@@ -11,10 +11,17 @@ router = APIRouter()
 # Create a new location
 @router.post("/", response_model=schemas.LocationOut)
 def create_location(location: schemas.LocationCreate, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    user = get_user_by_email(db, current_user["email"])
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["admin", "service"]:
+    # If service role, skip email lookup
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+
+    if user_role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return crud.create_location(db, location)
 
