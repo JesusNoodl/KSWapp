@@ -278,3 +278,45 @@ def update_user_role(db: Session, user_id: uuid.UUID, new_role: str):
     db.commit()
     db.refresh(user)
     return user
+
+def update_class(db: Session, class_id: int, class_: schemas.ClassUpdate) -> models.Class:
+    try:
+        db_class = db.query(models.Class).filter(models.Class.id == class_id).first()
+        if not db_class:
+            raise HTTPException(status_code=404, detail="Class not found")
+
+        update_data = class_.model_dump(exclude_unset=True, exclude={"age_categories"})
+        for key, value in update_data.items():
+            setattr(db_class, key, value)
+
+        # Set modified date
+        db_class.modified_at = datetime.now()
+        db.add(db_class)
+
+        # --- Handle XREF updates ---
+        if class_.age_categories is not None:
+            # Current XREFs in DB
+            current_xrefs = db.query(models.AgeCategoryXREF).filter(models.AgeCategoryXREF.class_id == class_id).all()
+            current_ids = {xref.age_category_id for xref in current_xrefs}
+            new_ids = set(class_.age_categories)
+
+            # Delete XREFs that are no longer in the new list
+            for xref in current_xrefs:
+                if xref.age_category_id not in new_ids:
+                    db.delete(xref)
+
+            # Add XREFs that are new
+            for age_category_id in new_ids - current_ids:
+                new_xref = models.AgeCategoryXREF(
+                    class_id=class_id,
+                    age_category_id=age_category_id
+                )
+                db.add(new_xref)
+
+        db.commit()
+        db.refresh(db_class)
+        return db_class
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")

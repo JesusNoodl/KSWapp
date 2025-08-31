@@ -14,7 +14,7 @@ def create_class(class_: schemas.ClassCreate, db: Session = Depends(get_db), cur
     user = get_user_by_email(db, current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
+    if user.role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return crud.create_class(db, class_)
 
@@ -37,7 +37,7 @@ def delete_class(class_id: int, db: Session = Depends(database.get_db), current_
     user = get_user_by_email(db, current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
+    if user.role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     result = crud.delete_class(db, class_id)
 
@@ -55,6 +55,6 @@ def update_class(class_id: int, class_: schemas.ClassUpdate, db: Session = Depen
     user = get_user_by_email(db, current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
+    if user.role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return crud.update_class(db, class_id, class_)

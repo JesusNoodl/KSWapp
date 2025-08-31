@@ -1,1 +1,3 @@
-{}
+{
+  "test/test_class.py::test_delete_class": true
+}

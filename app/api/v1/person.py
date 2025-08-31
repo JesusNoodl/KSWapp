@@ -14,7 +14,7 @@ def enroll_student(person: schemas.PersonCreate, db: Session = Depends(get_db), 
     user = get_user_by_email(db, current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
+    if user.role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return crud.enroll_person(db, person)
 
@@ -28,10 +28,20 @@ def get_person(person_id: int, db: Session = Depends(get_db)):
 
 # Get all students
 @router.get("/", response_model=list[schemas.PersonOut])
-def get_all_people(db: Session = Depends(get_db)):
+def get_all_people(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return db.query(models.Person).all()
 
 # Update a student by ID
 @router.put("/{person_id}", response_model=schemas.PersonOut)
-def update_person(person_id: int, person_update: schemas.PersonUpdate, db: Session = Depends(get_db)):
+def update_person(person_id: int, person_update: schemas.PersonUpdate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return crud.update_person(db, person_id, person_update)

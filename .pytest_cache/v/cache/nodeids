@@ -6,6 +6,7 @@
   "test/test_belts.py::test_get_belt_not_found",
   "test/test_belts.py::test_get_belts",
   "test/test_class.py::test_create_class",
+  "test/test_class.py::test_delete_class",
   "test/test_class.py::test_get_class",
   "test/test_class.py::test_get_class_not_found",
   "test/test_class.py::test_get_classes",

@@ -4,20 +4,20 @@ from sqlalchemy.orm import Session
 from app import crud, schemas, database, models
 from datetime import datetime
 from typing import Optional
+from app.database import get_db
+from app.api.v1.dependencies import get_current_user
+from app.crud import get_user_by_email
 
 router = APIRouter()
 
-# Dependency
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # Standard promotion
 @router.post("/standard_promotions/", response_model=schemas.PromotionBase)
-def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
+def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
     promotion_date = request.promotion_date
@@ -42,7 +42,12 @@ def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = 
 
 # Tab a promotion
 @router.post("/tab_promotions/", response_model=schemas.PromotionBase)
-def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db)):
+def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
     promotion_date = request.promotion_date
@@ -68,7 +73,12 @@ def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depen
 
 # Set a specific belt for a student
 @router.post("/set_belt/", response_model=schemas.PromotionBase)
-def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db)):
+def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     person_id = request.person_id
     location_id = request.location_id
     promotion_date = request.promotion_date
@@ -86,7 +96,12 @@ def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(databas
 
 # Delete a promotion
 @router.delete("/delete_promotion/{promotion_id}")
-def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db)):
+def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     result = crud.remove_promotion(db, promotion_id)
 
     if result == "not_found":
@@ -99,7 +114,12 @@ def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db)):
 
 # Get all promotions
 @router.get("/", response_model=list[schemas.PromotionOut])
-def get_promotions(db: Session = Depends(get_db)):
+def get_promotions(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    user = get_user_by_email(db, current_user["email"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role not in ["instructor", "admin", "service"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
     return db.query(models.Promotions).all()
 
 # Get promoitions for a student

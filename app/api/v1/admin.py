@@ -14,7 +14,7 @@ def promote_user(email: str, new_role: str, current_user=Depends(get_current_use
     if not current_app_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if current_app_user.role != "admin":
+    if current_app_user.role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Admins only")
     
     user = get_user_by_email(db, email)

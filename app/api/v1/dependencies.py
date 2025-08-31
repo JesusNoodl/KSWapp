@@ -13,14 +13,14 @@ SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
-    resp = requests.get(
-        f"{SUPABASE_URL}/auth/v1/user",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "apikey": SUPABASE_ANON_KEY
-        }
-    )
+    # service key bypass
+    if token == os.getenv("SUPABASE_SERVICE_ROLE_KEY"):
+        return {"role": "service"}
+    
+    # normal user check
+    resp = requests.get(f"{SUPABASE_URL}/auth/v1/user", headers={"Authorization": f"Bearer {token}"})
     if resp.status_code != 200:
         raise HTTPException(status_code=401, detail="Invalid token")
-    return resp.json()  # includes id and email
+    return resp.json()
+
 

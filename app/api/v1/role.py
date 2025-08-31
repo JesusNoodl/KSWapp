@@ -14,7 +14,7 @@ def get_roles(db: Session = Depends(get_db), current_user=Depends(get_current_us
     user = get_user_by_email(db, current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if user.role not in ["instructor", "admin"]:
+    if user.role not in ["instructor", "admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return db.query(models.Role).all()
 
