@@ -39,7 +39,7 @@ def get_all_events(db: Session = Depends(get_db)):
     return db.query(models.Event).all()
 
 # Delete an event
-@router.delete("/event/{event_id}")
+@router.delete("/{event_id}")
 def delete_event(event_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
     # If service role, skip email lookup
     if current_user.get("role") == "service":
