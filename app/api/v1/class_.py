@@ -32,7 +32,7 @@ def get_all_classes(db: Session = Depends(get_db)):
     return db.query(models.Class).all()
 
 # Delete a class
-@router.delete("/class/{class_id}")
+@router.delete("/{class_id}")
 def delete_class(class_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
     user = get_user_by_email(db, current_user["email"])
     if not user:
