@@ -11,6 +11,7 @@
   "test/test_class.py::test_get_class_not_found",
   "test/test_class.py::test_get_classes",
   "test/test_event.py::test_create_event",
+  "test/test_event.py::test_delete_event",
   "test/test_event.py::test_get_event",
   "test/test_event.py::test_get_event_not_found",
   "test/test_event.py::test_get_events",

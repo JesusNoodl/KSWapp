@@ -5,6 +5,8 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 import uuid
 
+days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
+
 def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
     db_belt = models.Belt(**belt.model_dump())
     db.add(db_belt)
@@ -170,6 +172,7 @@ def create_class(db: Session, class_: schemas.ClassCreate) -> models.Class:
         # exclude age_categories when creating Class
         class_data = class_.model_dump(exclude={"age_categories"})
         db_class = models.Class(**class_data)
+        db_class.day = days_of_week[class_.day_number]  # Map day name to number
         db.add(db_class)
         db.flush()  # get db_class.id
 

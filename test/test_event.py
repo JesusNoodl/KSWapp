@@ -62,3 +62,10 @@ def test_get_event_not_found(service_headers):
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Event not found"
+'''
+def test_delete_event(service_headers):
+    for i in range(3,8):
+        response = client.delete(f"/event/{i}", headers=service_headers)
+        assert response.status_code == 200
+        data = response.json()
+'''

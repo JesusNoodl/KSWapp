@@ -80,7 +80,7 @@ class PersonUpdate(BaseModel):
 class ClassBase(BaseModel):
     title: str
     description: Optional[str]
-    day: str
+    day_number: int
     start_time: time
     end_time: time
     location_id: int
@@ -91,6 +91,7 @@ class ClassCreate(ClassBase):
 
 class ClassOut(ClassBase):
     id:int
+    day: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

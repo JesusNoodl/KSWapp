@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, Uuid, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Double, ForeignKeyConstraint, Identity, Integer, Numeric, PrimaryKeyConstraint, SmallInteger, String, Table, Text, Time, UniqueConstraint, Uuid, text
 from sqlalchemy.dialects.postgresql import OID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import datetime
@@ -77,6 +77,32 @@ class EventType(Base):
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     event: Mapped[List['Event']] = relationship('Event', back_populates='event_type')
+
+
+t_full_person = Table(
+    'full_person', Base.metadata,
+    Column('first_name', Text),
+    Column('last_name', Text),
+    Column('student_id', Text),
+    Column('dob', DateTime(True)),
+    Column('active', Boolean),
+    Column('black_belt_id', Text),
+    Column('role', String),
+    Column('belt_name', Text),
+    Column('korean_belt_name', Text),
+    Column('age_category', String)
+)
+
+
+t_location_adress = Table(
+    'location_adress', Base.metadata,
+    Column('title', String),
+    Column('house_number', Integer),
+    Column('house_name', Text),
+    Column('street_name', Text),
+    Column('town', Text),
+    Column('post_code', Text)
+)
 
 
 class News(Base):
@@ -174,6 +200,7 @@ class Users(Base):
     role: Mapped[str] = mapped_column(Text, server_default=text("'user'::text"))
     email: Mapped[Optional[str]] = mapped_column(Text)
 
+    contact: Mapped[List['Contact']] = relationship('Contact', back_populates='user')
     user_person: Mapped[List['UserPerson']] = relationship('UserPerson', back_populates='user')
 
 
@@ -181,24 +208,26 @@ class Contact(Base):
     __tablename__ = 'contact'
     __table_args__ = (
         ForeignKeyConstraint(['address_id'], ['address.id'], name='contact_address_id_fkey'),
+        ForeignKeyConstraint(['user_id'], ['users.id'], name='contact_user_id_fkey'),
         PrimaryKeyConstraint('id', name='contact_pkey'),
         UniqueConstraint('id', name='contact_id_key')
     )
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
-    account_id: Mapped[int] = mapped_column(Integer)
     is_primary: Mapped[bool] = mapped_column(Boolean)
     first_name: Mapped[str] = mapped_column(Text)
     second_name: Mapped[str] = mapped_column(Text)
     primary_phone_number: Mapped[int] = mapped_column(BigInteger)
     relation: Mapped[str] = mapped_column(Text)
     address_id: Mapped[int] = mapped_column(Integer)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     secondary_phone_number: Mapped[Optional[int]] = mapped_column(BigInteger)
     email: Mapped[Optional[str]] = mapped_column(Text)
 
     address: Mapped['Address'] = relationship('Address', back_populates='contact')
+    user: Mapped['Users'] = relationship('Users', back_populates='contact')
 
 
 class Person(Base):
@@ -280,6 +309,7 @@ class UserPerson(Base):
 class Class(Base):
     __tablename__ = 'class'
     __table_args__ = (
+        CheckConstraint('day_number < 7', name='class_day_number_check'),
         ForeignKeyConstraint(['instructor_id'], ['person.id'], name='class_instructor_id_fkey'),
         ForeignKeyConstraint(['location_id'], ['location.id'], name='class_location_id_fkey'),
         PrimaryKeyConstraint('id', name='class_pkey'),
@@ -288,19 +318,20 @@ class Class(Base):
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     title: Mapped[str] = mapped_column(String)
-    day: Mapped[str] = mapped_column(String)
+    day: Mapped[str] = mapped_column(Text)
     start_time: Mapped[datetime.time] = mapped_column(Time)
     end_time: Mapped[datetime.time] = mapped_column(Time)
     location_id: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime, server_default=text('now()'))
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    day_number: Mapped[int] = mapped_column(Integer)
     description: Mapped[Optional[str]] = mapped_column(String)
     instructor_id: Mapped[Optional[int]] = mapped_column(Integer)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
 
     instructor: Mapped[Optional['Person']] = relationship('Person', back_populates='class_')
     location: Mapped['Location'] = relationship('Location', back_populates='class_')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_')
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='class_', cascade="all, delete-orphan")
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='class_')
 
 
@@ -326,7 +357,7 @@ class Event(Base):
 
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
-    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event')
+    age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event', cascade="all, delete-orphan")
 
 
 class Promotions(Base):
