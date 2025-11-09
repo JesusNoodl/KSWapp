@@ -169,3 +169,39 @@ class EventOut(EventBase):
     modified_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
+
+class ClassScheduleOut(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    day: Optional[str] = None
+    day_number: int
+    start_time: time
+    end_time: time
+    location_id: int
+    instructor_id: Optional[int] = None
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+class CalendarEventOut(BaseModel):
+    id: int
+    calendar_type: str  # 'class' or 'event'
+    class_id: Optional[int] = None
+    event_id: Optional[int] = None
+    class_name: str
+    description: Optional[str] = None
+    date: date
+    day: Optional[str] = None
+    start_time: time
+    end_time: time
+    location_name: Optional[str] = None
+    location_id: Optional[int] = None
+    is_dojang: Optional[bool] = None
+    instructor_id: Optional[int] = None
+    event_type: Optional[str] = None
+    day_number: Optional[int] = None
+
+    class Config:
+        from_attributes = True
