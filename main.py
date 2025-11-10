@@ -19,9 +19,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # For local development
-        "https://fakenham-ma.vercel.app",  # Your Vercel domain
-        "https://*.vercel.app",  # All Vercel preview deployments
+        "https://fakenham-ma.vercel.app",  # Your Vercel frontend URL
+        "http://localhost:5173",           # For local development
+        "http://localhost:3000",           # Alternative local port
     ],
     allow_credentials=True,
     allow_methods=["*"],

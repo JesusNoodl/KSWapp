@@ -23,11 +23,17 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         return {"role": "service"}
     
     # normal user check
-    print(f"Verifying user token with Supabase at: {SUPABASE_URL}/auth/v1/user")
+    supabase_url = SUPABASE_URL
+    auth_url = f"{supabase_url}/auth/v1/user"
+    
+    print(f"Verifying user token with Supabase at: {auth_url}")
     
     resp = requests.get(
-        f"{SUPABASE_URL}/auth/v1/user", 
-        headers={"Authorization": f"Bearer {token}"}
+        auth_url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "apikey": os.getenv("SUPABASE_ANON_KEY")  # This is required!
+        }
     )
     
     print(f"Supabase auth response status: {resp.status_code}")
