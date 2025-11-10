@@ -34,3 +34,4 @@ def test_get_one_month_calendar(service_headers):
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
+    print(data)

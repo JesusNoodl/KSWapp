@@ -181,7 +181,7 @@ class FullCalendarOut(BaseModel):
     start_time: time
     end_time: time
     instructor_id: Optional[int] = None
-    description: str
+    description: Optional[str] = None
     event_id: Optional[int] = None
     event_type: Optional[str] = None
     location_id: Optional[int] = None

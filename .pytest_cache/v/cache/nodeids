@@ -8,6 +8,8 @@
   "test/test_calendar.py::test_get_calendar_events",
   "test/test_calendar.py::test_get_calendar_events_invalid_month",
   "test/test_calendar.py::test_get_cancelled_classes",
+  "test/test_calendar.py::test_get_full_calendar",
+  "test/test_calendar.py::test_get_one_month_calendar",
   "test/test_calendar.py::test_get_schedule",
   "test/test_class.py::test_create_class",
   "test/test_class.py::test_delete_class",
