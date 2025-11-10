@@ -36,7 +36,7 @@ def get_class(class_id: int, db: Session = Depends(get_db)):
 # Get all classes
 @router.get("/", response_model=list[schemas.ClassOut])
 def get_all_classes(db: Session = Depends(get_db)):
-    return db.query(models.Class).all()
+    return db.query(models.Class).filter(models.Class.is_active == True).all()
 
 @router.delete("/{class_id}")
 def delete_class(
