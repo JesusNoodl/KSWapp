@@ -87,8 +87,8 @@ class ClassBase(BaseModel):
     end_time: time
     location_id: int
     instructor_id: int
-    active_from: Optional[time] = None
-    active_to: Optional[time] = None
+    active_from: Optional[date] = None
+    active_to: Optional[date] = None
 
 class ClassCreate(ClassBase):
     age_categories: list[int]
