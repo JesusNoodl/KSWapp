@@ -84,3 +84,8 @@ def update_class(class_id: int, class_: schemas.ClassUpdate, db: Session = Depen
     if user_role not in ["admin", "service"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     return crud.update_class(db, class_id, class_)
+
+# Get all classe exceptions
+@router.get("/cancelled", response_model=list[schemas.ClassExceptionOut])
+def get_all_class_exceptions(db: Session = Depends(get_db)):
+    return db.query(models.ClassException).all()

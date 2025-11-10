@@ -8,6 +8,8 @@ class BeltBase(BaseModel):
     is_stripe: bool
     korean_name: str
     primary_colour: str
+    hangul: Optional[str] = None
+    belt_abbreviation: Optional[str] = None
 
 class BeltCreate(BeltBase):
     pass
@@ -85,6 +87,8 @@ class ClassBase(BaseModel):
     end_time: time
     location_id: int
     instructor_id: int
+    active_from: Optional[time] = None
+    active_to: Optional[time] = None
 
 class ClassCreate(ClassBase):
     age_categories: list[int]
@@ -170,38 +174,33 @@ class EventOut(EventBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-class ClassScheduleOut(BaseModel):
-    id: int
-    title: str
-    description: Optional[str] = None
-    day: Optional[str] = None
-    day_number: int
-    start_time: time
-    end_time: time
-    location_id: int
-    instructor_id: Optional[int] = None
-    is_active: bool
-
-    class Config:
-        from_attributes = True
-
-class CalendarEventOut(BaseModel):
-    id: int
-    calendar_type: str  # 'class' or 'event'
-    class_id: Optional[int] = None
-    event_id: Optional[int] = None
-    class_name: str
-    description: Optional[str] = None
+class FullCalendarOut(BaseModel):
     date: date
-    day: Optional[str] = None
+    class_id: Optional[int] = None
+    class_name: str
     start_time: time
     end_time: time
-    location_name: Optional[str] = None
-    location_id: Optional[int] = None
-    is_dojang: Optional[bool] = None
     instructor_id: Optional[int] = None
+    description: str
+    event_id: Optional[int] = None
     event_type: Optional[str] = None
-    day_number: Optional[int] = None
+    location_id: Optional[int] = None
+    location_name: Optional[str] = None
+    is_dojang: Optional[bool] = None
+    day_name: Optional[str] = None
+    day_of_week: Optional[int] = None # 0 is Sunday, 1 is Monday, etc.
+    calendar_type: str  # "class" or "event"
+    instructor_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class ClassExceptionOut(BaseModel):
+    id: int
+    class_id: int
+    date: date
+    cancelled: bool
+    note: Optional[str] = None
+    created_at: Optional[datetime] = None
+    modified_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)

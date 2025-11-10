@@ -49,6 +49,7 @@ class Belt(Base):
     __tablename__ = 'belt'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='belt_pkey'),
+        UniqueConstraint('belt_abbreviation', name='belt_belt_abbreviation_key'),
         UniqueConstraint('id', name='belt_id_key')
     )
 
@@ -59,6 +60,8 @@ class Belt(Base):
     primary_colour: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    hangul: Mapped[Optional[str]] = mapped_column(Text)
+    belt_abbreviation: Mapped[Optional[str]] = mapped_column(Text)
 
     person: Mapped[List['Person']] = relationship('Person', back_populates='belt_level')
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='belt')
@@ -79,8 +82,30 @@ class EventType(Base):
     event: Mapped[List['Event']] = relationship('Event', back_populates='event_type')
 
 
+t_full_calendar = Table(
+    'full_calendar', Base.metadata,
+    Column('date', Date),
+    Column('day_name', Text),
+    Column('day_of_week', Numeric),
+    Column('class_id', Integer),
+    Column('event_id', Integer),
+    Column('class_name', String),
+    Column('start_time', Time),
+    Column('end_time', Time),
+    Column('instructor_id', Integer),
+    Column('instructor_name', Text),
+    Column('description', String),
+    Column('location_id', Integer),
+    Column('location_name', String),
+    Column('is_dojang', Boolean),
+    Column('event_type', Text),
+    Column('calendar_type', Text)
+)
+
+
 t_full_person = Table(
     'full_person', Base.metadata,
+    Column('id', Integer),
     Column('first_name', Text),
     Column('last_name', Text),
     Column('student_id', Text),
@@ -90,6 +115,7 @@ t_full_person = Table(
     Column('role', String),
     Column('belt_name', Text),
     Column('korean_belt_name', Text),
+    Column('belt_abbreviation', Text),
     Column('age_category', String)
 )
 
