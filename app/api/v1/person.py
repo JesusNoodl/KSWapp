@@ -26,7 +26,7 @@ def enroll_student(person: schemas.PersonCreate, db: Session = Depends(get_db), 
     return crud.enroll_person(db, person)
 
 # Get a student by ID
-@router.get("/{person_id}", response_model=schemas.PersonOut)
+@router.get("/{person_id}", response_model=schemas.FullPersonOut)
 def get_person(
     person_id: int, 
     db: Session = Depends(get_db), 
