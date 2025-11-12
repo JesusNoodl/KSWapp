@@ -211,7 +211,6 @@ class FullPersonOut(BaseModel):
     last_name: str
     dob: datetime
     age_category: str
-    created_at: datetime
     active: bool
     role: str
     belt_name: str
