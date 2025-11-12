@@ -22,6 +22,7 @@ app.add_middleware(
         "https://fakenham-ma.vercel.app",  # Your Vercel frontend URL
         "http://localhost:5173",           # For local development
         "http://localhost:3000",           # Alternative local port
+        "https://*.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
