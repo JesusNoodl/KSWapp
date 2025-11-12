@@ -27,10 +27,33 @@ def enroll_student(person: schemas.PersonCreate, db: Session = Depends(get_db), 
 
 # Get a student by ID
 @router.get("/{person_id}", response_model=schemas.PersonOut)
-def get_person(person_id: int, db: Session = Depends(get_db)):
-    person = db.query(models.Person).filter(models.Person.id == person_id).first()
+def get_person(
+    person_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: dict = Depends(get_current_user)
+):
+    # Determine user role
+    if current_user.get("role") == "service":
+        user_role = "service"
+    else:
+        # Regular user, fetch from db
+        user = get_user_by_email(db, current_user["email"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user_role = user.role
+    
+    # Check permissions
+    if user_role not in ["instructor", "admin", "service", "user"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # Query the full_person view instead of the Person table
+    person = db.query(models.t_full_person).filter(
+        models.t_full_person.c.id == person_id
+    ).first()
+    
     if person is None:
         raise HTTPException(status_code=404, detail="Person not found")
+    
     return person
 
 # Get all students

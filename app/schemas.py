@@ -204,3 +204,20 @@ class ClassExceptionOut(BaseModel):
     modified_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class FullPersonOut(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    dob: datetime
+    age_category: str
+    created_at: datetime
+    active: bool
+    role: str
+    belt_name: str
+    korean_belt_name: str
+    belt_abbreviation: Optional[str] = None
+    student_id: Optional[str] = None
+    black_belt_id: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
