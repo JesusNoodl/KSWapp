@@ -220,3 +220,23 @@ class FullPersonOut(BaseModel):
     black_belt_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class AwardBase(BaseModel):
+    award_type: int
+    person: int
+    rank_at_time: Optional[int] = None
+    event: Optional[int] = None
+    tournament_category: Optional[int] = None
+    date_achieved: date
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AwardOut(AwardBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AwardCreate(AwardBase):
+    pass

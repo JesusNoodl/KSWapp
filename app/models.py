@@ -45,6 +45,23 @@ class AgeCategory(Base):
     age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='age_category')
 
 
+class AwardType(Base):
+    __tablename__ = 'award_type'
+    __table_args__ = (
+        CheckConstraint('points > 0', name='award_type_points_check'),
+        PrimaryKeyConstraint('id', name='award_type_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    award_name: Mapped[str] = mapped_column(Text)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    award_type: Mapped[Optional[str]] = mapped_column(Text)
+    points: Mapped[Optional[int]] = mapped_column(Integer)
+
+    award: Mapped[List['Award']] = relationship('Award', back_populates='award_type_')
+
+
 class Belt(Base):
     __tablename__ = 'belt'
     __table_args__ = (
@@ -64,7 +81,9 @@ class Belt(Base):
     belt_abbreviation: Mapped[Optional[str]] = mapped_column(Text)
 
     person: Mapped[List['Person']] = relationship('Person', back_populates='belt_level')
+    tournament_category_belt_XREF: Mapped[List['TournamentCategoryBeltXREF']] = relationship('TournamentCategoryBeltXREF', back_populates='belt_')
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='belt')
+    award: Mapped[List['Award']] = relationship('Award', back_populates='belt')
 
 
 class EventType(Base):
@@ -215,6 +234,23 @@ class Role(Base):
     person: Mapped[List['Person']] = relationship('Person', back_populates='role')
 
 
+class TournamentCategory(Base):
+    __tablename__ = 'tournament_category'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='tournament_category_pkey'),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    name: Mapped[str] = mapped_column(Text)
+    is_black_belt_only: Mapped[bool] = mapped_column(Boolean, server_default=text('false'))
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    upper_category: Mapped[Optional[str]] = mapped_column(Text)
+
+    tournament_category_belt_XREF: Mapped[List['TournamentCategoryBeltXREF']] = relationship('TournamentCategoryBeltXREF', back_populates='tournament_category_')
+    award: Mapped[List['Award']] = relationship('Award', back_populates='tournament_category_')
+
+
 class Users(Base):
     __tablename__ = 'users'
     __table_args__ = (
@@ -288,6 +324,25 @@ class Person(Base):
     class_: Mapped[List['Class']] = relationship('Class', back_populates='instructor')
     promotions: Mapped[List['Promotions']] = relationship('Promotions', back_populates='student')
     attendance: Mapped[List['Attendance']] = relationship('Attendance', back_populates='person')
+    award: Mapped[List['Award']] = relationship('Award', back_populates='person_')
+
+
+class TournamentCategoryBeltXREF(Base):
+    __tablename__ = 'tournament_category_belt_XREF'
+    __table_args__ = (
+        ForeignKeyConstraint(['belt'], ['belt.id'], name='tournament_category_belt_XREF_belt_fkey'),
+        ForeignKeyConstraint(['tournament_category'], ['tournament_category.id'], name='tournament_category_belt_XREF_tournament_category_fkey'),
+        PrimaryKeyConstraint('id', name='tournament_category_belt_XREF_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    belt: Mapped[int] = mapped_column(Integer)
+    tournament_category: Mapped[int] = mapped_column(BigInteger)
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+
+    belt_: Mapped['Belt'] = relationship('Belt', back_populates='tournament_category_belt_XREF')
+    tournament_category_: Mapped['TournamentCategory'] = relationship('TournamentCategory', back_populates='tournament_category_belt_XREF')
 
 
 class Location(Base):
@@ -387,6 +442,7 @@ class Event(Base):
     event_type: Mapped['EventType'] = relationship('EventType', back_populates='event')
     location: Mapped[Optional['Location']] = relationship('Location', back_populates='event')
     age_category_XREF: Mapped[List['AgeCategoryXREF']] = relationship('AgeCategoryXREF', back_populates='event', cascade="all, delete-orphan")
+    award: Mapped[List['Award']] = relationship('Award', back_populates='event_')
 
 
 class Promotions(Base):
@@ -452,6 +508,34 @@ class Attendance(Base):
 
     class_: Mapped[Optional['Class']] = relationship('Class', back_populates='attendance')
     person: Mapped['Person'] = relationship('Person', back_populates='attendance')
+
+
+class Award(Base):
+    __tablename__ = 'award'
+    __table_args__ = (
+        ForeignKeyConstraint(['award_type'], ['award_type.id'], name='award_award_type_fkey'),
+        ForeignKeyConstraint(['event'], ['event.id'], name='award_event_fkey'),
+        ForeignKeyConstraint(['person'], ['person.id'], name='award_person_fkey'),
+        ForeignKeyConstraint(['rank_at_time'], ['belt.id'], name='award_rank_at_time_fkey'),
+        ForeignKeyConstraint(['tournament_category'], ['tournament_category.id'], name='award_tournament_category_fkey'),
+        PrimaryKeyConstraint('id', name='award_pkey')
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(start=1, increment=1, minvalue=1, maxvalue=9223372036854775807, cycle=False, cache=1), primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
+    award_type: Mapped[int] = mapped_column(BigInteger)
+    person: Mapped[int] = mapped_column(Integer)
+    date_achieved: Mapped[datetime.date] = mapped_column(Date, server_default=text('now()'))
+    modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    rank_at_time: Mapped[Optional[int]] = mapped_column(Integer)
+    event: Mapped[Optional[int]] = mapped_column(Integer)
+    tournament_category: Mapped[Optional[int]] = mapped_column(BigInteger)
+
+    award_type_: Mapped['AwardType'] = relationship('AwardType', back_populates='award')
+    event_: Mapped[Optional['Event']] = relationship('Event', back_populates='award')
+    person_: Mapped['Person'] = relationship('Person', back_populates='award')
+    belt: Mapped[Optional['Belt']] = relationship('Belt', back_populates='award')
+    tournament_category_: Mapped[Optional['TournamentCategory']] = relationship('TournamentCategory', back_populates='award')
 
 
 class ClassException(Base):
