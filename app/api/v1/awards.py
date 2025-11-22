@@ -14,12 +14,8 @@ router = APIRouter()
 @router.get("/student/{student_id}", response_model=list[schemas.AwardOut])
 def get_awards_for_student(student_id: int, db: Session = Depends(get_db)):
     result = db.query(models.Award).filter(models.Award.person == student_id).all()
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Awards not found", "student_id": student_id}
-        )
-    return result
+    # Return empty array if no awards
+    return result if result else []
 
 # Get all awards
 @router.get("/", response_model=list[schemas.AwardOut])
