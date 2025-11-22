@@ -247,11 +247,12 @@ class FullAwardBase(BaseModel):
     points: Optional[int] = None
     name: str
     belt_at_time: Optional[str] = None
-    belt_at_tim_korean: Optional[str] = None
+    belt_at_time_korean: Optional[str] = None
     event: Optional[str] = None
     tournament_category: Optional[str] = None
     tournament_category_upper: Optional[str] = None
     date_achieved: date
+    person_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
