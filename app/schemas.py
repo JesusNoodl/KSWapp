@@ -241,6 +241,9 @@ class AwardOut(AwardBase):
 class AwardCreate(AwardBase):
     pass
 
+class AwardUpdate(AwardBase):
+    pass
+
 class FullAwardBase(BaseModel):
     award_name: str
     award_type: str

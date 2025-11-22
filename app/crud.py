@@ -323,3 +323,130 @@ def update_class(db: Session, class_id: int, class_: schemas.ClassUpdate) -> mod
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+    
+def create_award(db: Session, award: schemas.AwardCreate) -> models.Award:
+    """
+    Create a new award.
+    Automatically pulls current rank from person table if rank_at_time is not provided.
+    """
+    # Check if person exists
+    person = db.query(models.Person).filter(models.Person.id == award.person).first()
+    if not person:
+        return "person_not_found"
+    
+    # If rank_at_time is not provided, use person's current belt level
+    rank_at_time = award.rank_at_time
+    if rank_at_time is None:
+        if person.belt_level_id is None:
+            return "no_belt"
+        rank_at_time = person.belt_level_id
+    
+    # Check if award_type exists
+    award_type = db.query(models.AwardType).filter(
+        models.AwardType.id == award.award_type
+    ).first()
+    if not award_type:
+        return "award_type_not_found"
+    
+    # Check if event exists (if provided)
+    if award.event is not None:
+        event = db.query(models.Event).filter(models.Event.id == award.event).first()
+        if not event:
+            return "event_not_found"
+    
+    # Check if tournament_category exists (if provided)
+    if award.tournament_category is not None:
+        category = db.query(models.TournamentCategory).filter(
+            models.TournamentCategory.id == award.tournament_category
+        ).first()
+        if not category:
+            return "category_not_found"
+    
+    # Create the award
+    new_award = models.Award(
+        award_type=award.award_type,
+        person=award.person,
+        rank_at_time=rank_at_time,
+        event=award.event,
+        date_achieved=award.date_achieved if award.date_achieved else datetime.now(),
+        tournament_category=award.tournament_category
+    )
+    
+    db.add(new_award)
+    db.commit()
+    db.refresh(new_award)
+    
+    return new_award
+
+
+def update_award(db: Session, award_id: int, award_update: schemas.AwardUpdate) -> models.Award:
+    """
+    Update an existing award.
+    Only updates fields that are provided (not None).
+    """
+    # Find the award
+    award = db.query(models.Award).filter(models.Award.id == award_id).first()
+    if not award:
+        return "not_found"
+    
+    # Get update data (only fields that were set)
+    update_data = award_update.model_dump(exclude_unset=True)
+    
+    # Validate references if they're being updated
+    if "person" in update_data:
+        person = db.query(models.Person).filter(
+            models.Person.id == update_data["person"]
+        ).first()
+        if not person:
+            return "person_not_found"
+    
+    if "award_type" in update_data:
+        award_type = db.query(models.AwardType).filter(
+            models.AwardType.id == update_data["award_type"]
+        ).first()
+        if not award_type:
+            return "award_type_not_found"
+    
+    if "rank_at_time" in update_data and update_data["rank_at_time"] is not None:
+        belt = db.query(models.Belt).filter(
+            models.Belt.id == update_data["rank_at_time"]
+        ).first()
+        if not belt:
+            return "belt_not_found"
+    
+    if "event" in update_data and update_data["event"] is not None:
+        event = db.query(models.Event).filter(
+            models.Event.id == update_data["event"]
+        ).first()
+        if not event:
+            return "event_not_found"
+    
+    if "tournament_category" in update_data and update_data["tournament_category"] is not None:
+        category = db.query(models.TournamentCategory).filter(
+            models.TournamentCategory.id == update_data["tournament_category"]
+        ).first()
+        if not category:
+            return "category_not_found"
+    
+    # Apply updates
+    for field, value in update_data.items():
+        setattr(award, field, value)
+    
+    db.commit()
+    db.refresh(award)
+    
+    return award
+
+
+def delete_award(db: Session, award_id: int):
+    """
+    Delete an award by ID.
+    """
+    award = db.query(models.Award).filter(models.Award.id == award_id).first()
+    if not award:
+        return "not_found"
+    
+    db.delete(award)
+    db.commit()
+    
+    return award
