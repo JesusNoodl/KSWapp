@@ -101,6 +101,23 @@ class EventType(Base):
     event: Mapped[List['Event']] = relationship('Event', back_populates='event_type')
 
 
+t_full_award = Table(
+    'full_award', Base.metadata,
+    Column('id', BigInteger),
+    Column('person_id', Integer),
+    Column('award_name', Text),
+    Column('award_type', Text),
+    Column('points', Integer),
+    Column('name', Text),
+    Column('belt_at_time', Text),
+    Column('belt_at_time_korean', Text),
+    Column('event', Text),
+    Column('date_achieved', Date),
+    Column('tournament_category', Text),
+    Column('tournament_category_upper', Text)
+)
+
+
 t_full_calendar = Table(
     'full_calendar', Base.metadata,
     Column('date', Date),

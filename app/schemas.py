@@ -240,3 +240,22 @@ class AwardOut(AwardBase):
 
 class AwardCreate(AwardBase):
     pass
+
+class FullAwardBase(BaseModel):
+    award_name: str
+    award_type: str
+    points: Optional[int] = None
+    name: str
+    belt_at_time: Optional[str] = None
+    belt_at_tim_korean: Optional[str] = None
+    event: Optional[str] = None
+    tournament_category: Optional[str] = None
+    tournament_category_upper: Optional[str] = None
+    date_achieved: date
+
+    model_config = ConfigDict(from_attributes=True)
+
+class FullAwardOut(FullAwardBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
