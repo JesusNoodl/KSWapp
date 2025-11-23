@@ -241,8 +241,15 @@ class AwardOut(AwardBase):
 class AwardCreate(AwardBase):
     pass
 
-class AwardUpdate(AwardBase):
-    pass
+class AwardUpdate(BaseModel):
+    award_type: Optional[int] = None
+    person: Optional[int] = None
+    rank_at_time: Optional[int] = None
+    event: Optional[int] = None
+    tournament_category: Optional[int] = None
+    date_achieved: Optional[date] = None
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class FullAwardBase(BaseModel):
     award_name: str
