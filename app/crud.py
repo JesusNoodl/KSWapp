@@ -4,6 +4,7 @@ from app import models, schemas
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 import uuid
+from typing import Optional, List
 
 days_of_week = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 
@@ -483,3 +484,52 @@ def delete_award(db: Session, award_id: int):
     db.commit()
     
     return award
+
+def get_contacts_by_user(db: Session, user_id: uuid.UUID) -> List[models.Contact]:
+    """Get all contacts for a specific user"""
+    return db.query(models.Contact).filter(models.Contact.user_id == user_id).all()
+
+def get_contact(db: Session, contact_id: int, user_id: uuid.UUID) -> Optional[models.Contact]:
+    """Get a specific contact - ensures it belongs to the user"""
+    return db.query(models.Contact).filter(
+        models.Contact.id == contact_id,
+        models.Contact.user_id == user_id
+    ).first()
+
+def create_contact(db: Session, contact: schemas.ContactCreate) -> models.Contact:
+    """Create a new contact"""
+    db_contact = models.Contact(**contact.model_dump())
+    db.add(db_contact)
+    db.commit()
+    db.refresh(db_contact)
+    return db_contact
+
+def update_contact(
+    db: Session, 
+    contact_id: int, 
+    user_id: uuid.UUID, 
+    contact_update: schemas.ContactUpdate
+) -> Optional[models.Contact]:
+    """Update a contact - ensures it belongs to the user"""
+    db_contact = get_contact(db, contact_id, user_id)
+    if not db_contact:
+        return None
+    
+    # Only update fields that were provided
+    update_data = contact_update.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_contact, field, value)
+    
+    db.commit()
+    db.refresh(db_contact)
+    return db_contact
+
+def delete_contact(db: Session, contact_id: int, user_id: uuid.UUID) -> bool:
+    """Delete a contact - ensures it belongs to the user"""
+    db_contact = get_contact(db, contact_id, user_id)
+    if not db_contact:
+        return False
+    
+    db.delete(db_contact)
+    db.commit()
+    return True

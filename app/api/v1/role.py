@@ -1,9 +1,9 @@
 # api/v1/role.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app import crud, schemas, database, models
+from app import schemas, models
 from app.database import get_db
-from app.api.v1.dependencies import get_current_user
+from app.api.v1.auth import get_current_user
 from app.crud import get_user_by_email
 
 router = APIRouter()

@@ -301,6 +301,7 @@ class Contact(Base):
     relation: Mapped[str] = mapped_column(Text)
     address_id: Mapped[int] = mapped_column(Integer)
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    country_calling_code: Mapped[str] = mapped_column(Text, server_default=text("'+44'::text"))
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     secondary_phone_number: Mapped[Optional[int]] = mapped_column(BigInteger)
     email: Mapped[Optional[str]] = mapped_column(Text)

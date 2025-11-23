@@ -2,6 +2,7 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime, time, date
 from typing import Optional
+from uuid import UUID
 
 class BeltBase(BaseModel):
     name: str
@@ -268,5 +269,43 @@ class FullAwardBase(BaseModel):
 
 class FullAwardOut(FullAwardBase):
     id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ContactBase(BaseModel):
+    first_name: str
+    last_name: str
+    is_primary: bool
+    primary_phone_number: int
+    relation: str
+    address_id: int
+    user_id: UUID
+    country_calling_code: str
+    email: Optional[str] = None
+    secondary_phone_number: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ContactOut(ContactBase):
+    id: int
+    created_at: datetime
+    modified_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ContactCreate(ContactBase):
+    pass
+
+class ContactUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    is_primary: Optional[bool] = None
+    primary_phone_number: Optional[int] = None
+    relation: Optional[str] = None
+    address_id: Optional[int] = None
+    user_id: Optional[UUID] = None
+    country_calling_code: Optional[str] = None
+    email: Optional[str] = None
+    secondary_phone_number: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
