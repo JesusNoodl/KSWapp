@@ -1,12 +1,8 @@
 # app/api/v1/calendar.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
-from datetime import datetime, date
-from typing import List, Optional
-from pydantic import BaseModel
-from datetime import timedelta
 from sqlalchemy import extract
 
 router = APIRouter()

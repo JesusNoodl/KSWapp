@@ -3,32 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import crud, schemas, models
 from app.database import get_db
-from app.api.v1.dependencies import get_current_user
+from app.api.v1.auth import get_current_user, get_user_role
 from typing import List
 from uuid import UUID
 
 router = APIRouter()
-
-@router.get("/user/{target_user_id}", response_model=List[schemas.ContactOut])
-async def get_contacts_for_user(
-    target_user_id: UUID,
-    current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get all contacts for a specific user.
-    Only accessible by admins/instructors.
-    """
-    user_role = current_user.get("user_role")
-    
-    if user_role not in ["admin", "instructor"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins and instructors can view other users' contacts"
-        )
-    
-    contacts = crud.get_contacts_by_user(db, target_user_id)
-    return contacts
 
 @router.get("/", response_model=List[schemas.ContactOut])
 async def get_my_contacts(
@@ -39,7 +18,7 @@ async def get_my_contacts(
     Get all contacts for the currently logged-in user.
     Any authenticated user can access their own contacts.
     """
-    user_id = UUID(current_user["sub"])  # Extract user_id from JWT
+    user_id = UUID(current_user["id"])
     contacts = crud.get_contacts_by_user(db, user_id)
     return contacts
 
@@ -47,19 +26,27 @@ async def get_my_contacts(
 async def get_contact(
     contact_id: int,
     current_user: dict = Depends(get_current_user),
+    user_role: str = Depends(get_user_role),
     db: Session = Depends(get_db)
 ):
     """
     Get a specific contact by ID.
     Users can only access their own contacts.
+    Admins can access any contact.
     """
-    user_id = UUID(current_user["sub"])
-    contact = crud.get_contact(db, contact_id, user_id)
+    user_id = UUID(current_user["id"])
+    
+    # Admins can view any contact
+    if user_role in ["admin", "service"]:
+        contact = db.query(models.Contact).filter(models.Contact.id == contact_id).first()
+    else:
+        # Regular users can only view their own contacts
+        contact = crud.get_contact(db, contact_id, user_id)
     
     if not contact:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Contact not found or you don't have permission to access it"
+            detail="Contact not found"
         )
     
     return contact
@@ -68,18 +55,18 @@ async def get_contact(
 async def create_contact(
     contact: schemas.ContactCreate,
     current_user: dict = Depends(get_current_user),
+    user_role: str = Depends(get_user_role),
     db: Session = Depends(get_db)
 ):
     """
     Create a new contact.
     - Regular users can only create contacts for themselves
-    - Admins/instructors can create contacts for any user
+    - Admins can create contacts for any user
     """
-    user_id = UUID(current_user["sub"])
-    user_role = current_user.get("user_role")  # Assuming role is in the JWT
+    user_id = UUID(current_user["id"])
     
-    # If not an admin/instructor, ensure they're only creating contacts for themselves
-    if user_role not in ["admin", "instructor"] and contact.user_id != user_id:
+    # If not an admin, ensure they're only creating contacts for themselves
+    if user_role not in ["admin", "service"] and contact.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only create contacts for yourself"
@@ -92,19 +79,18 @@ async def update_contact(
     contact_id: int,
     contact_update: schemas.ContactUpdate,
     current_user: dict = Depends(get_current_user),
+    user_role: str = Depends(get_user_role),
     db: Session = Depends(get_db)
 ):
     """
     Update a contact.
     - Regular users can only update their own contacts
-    - Admins/instructors can update any contact
+    - Admins can update any contact
     """
-    user_id = UUID(current_user["sub"])
-    user_role = current_user.get("user_role")
+    user_id = UUID(current_user["id"])
     
-    # For admins/instructors, allow updating any contact
-    if user_role in ["admin", "instructor"]:
-        # Get the contact without user_id restriction
+    # Admins can update any contact
+    if user_role in ["admin", "service"]:
         db_contact = db.query(models.Contact).filter(models.Contact.id == contact_id).first()
         if not db_contact:
             raise HTTPException(
@@ -142,17 +128,17 @@ async def update_contact(
 async def delete_contact(
     contact_id: int,
     current_user: dict = Depends(get_current_user),
+    user_role: str = Depends(get_user_role),
     db: Session = Depends(get_db)
 ):
     """
     Delete a contact.
     - Regular users can only delete their own contacts
-    - Admins/instructors can delete any contact
+    - Admins can delete any contact
     """
-    user_id = UUID(current_user["sub"])
-    user_role = current_user.get("user_role")
+    user_id = UUID(current_user["id"])
     
-    if user_role in ["admin", "instructor"]:
+    if user_role in ["admin", "service"]:
         # Admin can delete any contact
         db_contact = db.query(models.Contact).filter(models.Contact.id == contact_id).first()
         if not db_contact:
@@ -172,3 +158,22 @@ async def delete_contact(
             )
     
     return None
+
+@router.get("/user/{target_user_id}", response_model=List[schemas.ContactOut])
+async def get_contacts_for_user(
+    target_user_id: UUID,
+    user_role: str = Depends(get_user_role),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all contacts for a specific user.
+    Only accessible by admins.
+    """
+    if user_role not in ["admin", "service"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can view other users' contacts"
+        )
+    
+    contacts = crud.get_contacts_by_user(db, target_user_id)
+    return contacts
