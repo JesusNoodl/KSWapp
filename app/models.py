@@ -296,7 +296,7 @@ class Contact(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     is_primary: Mapped[bool] = mapped_column(Boolean)
     first_name: Mapped[str] = mapped_column(Text)
-    second_name: Mapped[str] = mapped_column(Text)
+    last_name: Mapped[str] = mapped_column(Text)
     primary_phone_number: Mapped[int] = mapped_column(BigInteger)
     relation: Mapped[str] = mapped_column(Text)
     address_id: Mapped[int] = mapped_column(Integer)
