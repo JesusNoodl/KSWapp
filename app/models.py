@@ -26,7 +26,6 @@ class Address(Base):
     post_code: Mapped[Optional[str]] = mapped_column(Text)
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
-    contact: Mapped[List['Contact']] = relationship('Contact', back_populates='address')
     location: Mapped[List['Location']] = relationship('Location', back_populates='address')
 
 
@@ -286,7 +285,6 @@ class Users(Base):
 class Contact(Base):
     __tablename__ = 'contact'
     __table_args__ = (
-        ForeignKeyConstraint(['address_id'], ['address.id'], name='contact_address_id_fkey'),
         ForeignKeyConstraint(['user_id'], ['users.id'], name='contact_user_id_fkey'),
         PrimaryKeyConstraint('id', name='contact_pkey'),
         UniqueConstraint('id', name='contact_id_key')
@@ -299,14 +297,17 @@ class Contact(Base):
     last_name: Mapped[str] = mapped_column(Text)
     primary_phone_number: Mapped[int] = mapped_column(BigInteger)
     relation: Mapped[str] = mapped_column(Text)
-    address_id: Mapped[int] = mapped_column(Integer)
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
     country_calling_code: Mapped[str] = mapped_column(Text, server_default=text("'+44'::text"))
     modified_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     secondary_phone_number: Mapped[Optional[int]] = mapped_column(BigInteger)
     email: Mapped[Optional[str]] = mapped_column(Text)
+    house_name: Mapped[Optional[str]] = mapped_column(Text)
+    street_name: Mapped[Optional[str]] = mapped_column(Text)
+    house_number: Mapped[Optional[int]] = mapped_column(Integer)
+    city: Mapped[Optional[str]] = mapped_column(Text)
+    postcode: Mapped[Optional[str]] = mapped_column(Text)
 
-    address: Mapped['Address'] = relationship('Address', back_populates='contact')
     user: Mapped['Users'] = relationship('Users', back_populates='contact')
 
 
