@@ -283,7 +283,7 @@ class ContactBase(BaseModel):
     house_number: Optional[int] = None
     street_name: Optional[str] = None
     house_name: Optional[str] = None
-    town: Optional[str] = None
+    postcode: Optional[str] = None
     city: Optional[str] = None
     email: Optional[str] = None
     secondary_phone_number: Optional[int] = None
@@ -313,7 +313,7 @@ class ContactUpdate(BaseModel):
     house_number: Optional[int] = None
     street_name: Optional[str] = None
     house_name: Optional[str] = None
-    town: Optional[str] = None
+    postcode: Optional[str] = None
     city: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
