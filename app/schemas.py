@@ -69,6 +69,7 @@ class PersonOut(PersonBase):
     model_config = ConfigDict(from_attributes=True)
 
 class PersonUpdate(BaseModel):
+    id: Optional[int] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     dob: Optional[datetime] = None

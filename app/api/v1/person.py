@@ -1,10 +1,11 @@
 # api/v1/person.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import crud, schemas, models
-from app.api.v1.auth import get_current_user
+from app.api.v1.auth import get_current_user, get_user_role
 from app.crud import get_user_by_email
 from app.database import get_db
+from uuid import UUID
 
 router = APIRouter()
 
@@ -116,3 +117,53 @@ def get_my_persons(
             status_code=500,
             detail=f"Failed to fetch person IDs: {str(e)}"
         )
+    
+@router.put("/{person_id}", response_model=schemas.ContactOut)
+async def update_person(
+    person_id: int,
+    person_update: schemas.PersonUpdate,
+    current_user: dict = Depends(get_current_user),
+    user_role: str = Depends(get_user_role),
+    db: Session = Depends(get_db)
+):
+    """
+    Update a contact.
+    - Regular users can only update their own contacts
+    - Admins can update any contact
+    """
+    user_id = UUID(current_user["id"])
+    
+    # Admins can update any contact
+    if user_role in ["admin", "service"]:
+        db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
+        if not db_person:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Person not found"
+            )
+        
+        # Update the contact
+        update_data = person_update.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(db_person, field, value)
+
+        db.commit()
+        db.refresh(db_person)
+        return db_person
+    else:
+        # Regular users can only update their own contacts
+        if person_update.id is not None and person_update.id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You cannot edit other students information"
+            )
+
+        updated_person = crud.update_person(db, person_id, person_update)
+
+        if not updated_person:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Person not found or you don't have permission to update it"
+            )
+
+        return updated_person
