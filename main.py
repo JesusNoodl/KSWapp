@@ -23,6 +23,7 @@ app.add_middleware(
         "http://localhost:5173",           # For local development
         "http://localhost:3000",           # Alternative local port
         "https://*.vercel.app",
+        "https://*.moxeyhallam.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
