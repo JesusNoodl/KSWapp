@@ -1,191 +1,102 @@
 # api/v1/promotions.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from app import crud, schemas, database, models
+from app import crud, schemas, models
 from app.database import get_db
-from app.api.v1.auth import get_current_user
-from app.crud import get_user_by_email
+from app.api.v1.auth import require_roles
+from app.exceptions import NotFoundError
 
 router = APIRouter()
 
-# Standard promotion
+
 @router.post("/standard_promotions/", response_model=schemas.PromotionBase)
-def standard_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    # If service role, skip email lookup
-    if current_user.get("role") == "service":
-        user_role = "service"
-    else:
-        # regular user, fetch from db
-        user = get_user_by_email(db, current_user["email"])
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_role = user.role
+def standard_promotion(
+    request: schemas.StandardPromotionRequest,
+    db: Session = Depends(get_db),
+    user_role: str = Depends(require_roles("instructor", "admin", "service"))
+):
+    """Standard belt promotion. Requires instructor, admin, or service role."""
+    return crud.standard_promotion(db, request.person_id, request.location_id, request.promotion_date)
 
-    if user_role not in ["instructor", "admin", "service"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    person_id = request.person_id
-    location_id = request.location_id
-    promotion_date = request.promotion_date
-    result = crud.standard_promotion(db, person_id, location_id, promotion_date)
 
-    if result == "not_found":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Person not found", "person_id": person_id}
-        )
-    elif result == "no_belt":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "Person has no belt to promote from", "person_id": person_id}
-        )
-    elif result == "max_belt":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "Person already at maximum belt", "person_id": person_id}
-        )
-    return result
-
-# Tab a promotion
 @router.post("/tab_promotions/", response_model=schemas.PromotionBase)
-def tab_promotion(request: schemas.StandardPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    # If service role, skip email lookup
-    if current_user.get("role") == "service":
-        user_role = "service"
-    else:
-        # regular user, fetch from db
-        user = get_user_by_email(db, current_user["email"])
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_role = user.role
+def tab_promotion(
+    request: schemas.StandardPromotionRequest,
+    db: Session = Depends(get_db),
+    user_role: str = Depends(require_roles("instructor", "admin", "service"))
+):
+    """Tab promotion. Requires instructor, admin, or service role."""
+    return crud.tab_promotion(db, request.person_id, request.location_id, request.promotion_date)
 
-    if user_role not in ["instructor", "admin", "service"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    person_id = request.person_id
-    location_id = request.location_id
-    promotion_date = request.promotion_date
-    result = crud.tab_promotion(db, person_id, location_id, promotion_date)
 
-    if result == "not_found":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Person not found", "person_id": person_id}
-        )
-    elif result == "no_belt":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "Person has no belt to promote from", "person_id": person_id}
-        )
-    elif result == "no_previous_promotion":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "Person has no previous promotion to tab", "person_id": person_id}
-        )
-
-    return result
-
-# Set a specific belt for a student
 @router.post("/set_belt/", response_model=schemas.PromotionBase)
-def set_belt(request: schemas.SetPromotionRequest, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    # If service role, skip email lookup
-    if current_user.get("role") == "service":
-        user_role = "service"
-    else:
-        # regular user, fetch from db
-        user = get_user_by_email(db, current_user["email"])
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_role = user.role
+def set_belt(
+    request: schemas.SetPromotionRequest,
+    db: Session = Depends(get_db),
+    user_role: str = Depends(require_roles("instructor", "admin", "service"))
+):
+    """Set a specific belt for a student. Requires instructor, admin, or service role."""
+    return crud.set_belt(
+        db,
+        request.person_id,
+        request.belt_id,
+        request.tabs,
+        request.location_id,
+        request.promotion_date
+    )
 
-    if user_role not in ["instructor", "admin", "service"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    person_id = request.person_id
-    location_id = request.location_id
-    promotion_date = request.promotion_date
-    tabs_toset = request.tabs
-    belt_toset_id = request.belt_id
-    result = crud.set_belt(db, person_id, belt_toset_id, tabs_toset, location_id, promotion_date)
 
-    if result == "not_found":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Person not found", "person_id": person_id}
-        )
-
-    return result
-
-# Delete a promotion
 @router.delete("/delete_promotion/{promotion_id}")
-def delete_promotion(promotion_id: int, db: Session = Depends(database.get_db), current_user=Depends(get_current_user)):
-    # If service role, skip email lookup
-    if current_user.get("role") == "service":
-        user_role = "service"
-    else:
-        # regular user, fetch from db
-        user = get_user_by_email(db, current_user["email"])
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_role = user.role
-
-    if user_role not in ["instructor", "admin", "service"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
+def delete_promotion(
+    promotion_id: int,
+    db: Session = Depends(get_db),
+    user_role: str = Depends(require_roles("instructor", "admin", "service"))
+):
+    """Delete a promotion. Requires instructor, admin, or service role."""
     result = crud.remove_promotion(db, promotion_id)
-
-    if result == "not_found":
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Promotion not found", "promotion_id": promotion_id}
-        )
-
     return {"status": "success", "deleted_promotion": result}
 
-# Get all promotions
-@router.get("/", response_model=list[schemas.PromotionOut])
-def get_promotions(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    # If service role, skip email lookup
-    if current_user.get("role") == "service":
-        user_role = "service"
-    else:
-        # regular user, fetch from db
-        user = get_user_by_email(db, current_user["email"])
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        user_role = user.role
 
-    if user_role not in ["instructor", "admin", "service"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
+@router.get("/", response_model=list[schemas.PromotionOut])
+def get_promotions(
+    db: Session = Depends(get_db),
+    user_role: str = Depends(require_roles("instructor", "admin", "service"))
+):
+    """Get all promotions. Requires instructor, admin, or service role."""
     return db.query(models.Promotions).all()
 
-# Get promoitions for a student
+
 @router.get("/student/{student_id}", response_model=list[schemas.PromotionOut])
 def get_promotions_for_student(student_id: int, db: Session = Depends(get_db)):
+    """Get all promotions for a student. Public endpoint."""
     result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id).all()
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Promotions not found", "student_id": student_id}
-        )
-    return result
+    return result if result else []
 
-# Get one promotion for a student
+
 @router.get("/student/{student_id}/promotion/{promotion_id}", response_model=schemas.PromotionOut)
 def get_promotion_for_student(student_id: int, promotion_id: int, db: Session = Depends(get_db)):
-    result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id, models.Promotions.id == promotion_id).first()
+    """Get a specific promotion for a student. Public endpoint."""
+    result = db.query(models.Promotions).filter(
+        models.Promotions.student_id == student_id,
+        models.Promotions.id == promotion_id
+    ).first()
     if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "Promotion not found", "student_id": student_id, "promotion_id": promotion_id}
-        )
+        raise NotFoundError("Promotion", promotion_id)
     return result
 
-# Get the current rank for a student
+
 @router.get("/current/student/{student_id}/", response_model=schemas.PromotionOut)
 def get_current_promotion_for_student(student_id: int, db: Session = Depends(get_db)):
-    result = db.query(models.Promotions).filter(models.Promotions.student_id == student_id).order_by(models.Promotions.promotion_date.desc(), models.Promotions.id.desc()).first()
+    """Get the current rank for a student. Public endpoint."""
+    result = db.query(models.Promotions).filter(
+        models.Promotions.student_id == student_id
+    ).order_by(
+        models.Promotions.promotion_date.desc(),
+        models.Promotions.id.desc()
+    ).first()
+
     if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "No promotions found", "student_id": student_id}
-        )
+        raise NotFoundError("Promotion for student", student_id)
 
     belt_name = db.query(models.Belt).filter(models.Belt.id == result.belt_id).first()
     response_data = result.__dict__.copy()

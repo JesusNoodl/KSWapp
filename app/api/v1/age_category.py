@@ -1,20 +1,25 @@
 # api/v1/age_category.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app import crud, schemas, database, models
+from app import schemas, models
 from app.database import get_db
+from app.exceptions import NotFoundError
 
 router = APIRouter()
 
-# Get all age categories
+
 @router.get("/", response_model=list[schemas.AgeCategoryOut])
 def get_age_categories(db: Session = Depends(get_db)):
+    """Get all age categories. Public endpoint."""
     return db.query(models.AgeCategory).all()
 
-# Get an age category
+
 @router.get("/{age_category_id}", response_model=schemas.AgeCategoryOut)
 def get_age_category(age_category_id: int, db: Session = Depends(get_db)):
-    age_category = db.query(models.AgeCategory).filter(models.AgeCategory.id == age_category_id).first()
+    """Get an age category by ID. Public endpoint."""
+    age_category = db.query(models.AgeCategory).filter(
+        models.AgeCategory.id == age_category_id
+    ).first()
     if age_category is None:
-        raise HTTPException(status_code=404, detail="Age category not found")
+        raise NotFoundError("Age category", age_category_id)
     return age_category

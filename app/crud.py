@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
 from app import models, schemas
-from fastapi import HTTPException
+from app.exceptions import NotFoundError, BadRequestError
 from sqlalchemy.exc import SQLAlchemyError
 import uuid
 from typing import Optional, List
@@ -17,18 +17,15 @@ def create_belt(db: Session, belt: schemas.BeltCreate) -> models.Belt:
 
 def standard_promotion(db: Session, person_id: int, location_id:int, promotions_date: datetime | None = None):
     person = db.query(models.Person).filter(models.Person.id == person_id).first()
-    #If the person does not exist, return an error
     if not person:
-        return "not_found"
-    
-    #If not a student, i.e. a parent with no belt level, return an error
+        raise NotFoundError("Person", person_id)
+
     if person.belt_level_id is None:
-        return "no_belt"
-    
-    #If the person is already at the highest belt level, return an error
+        raise BadRequestError("Person has no belt level assigned")
+
     max_belt_id = db.query(models.Belt.id).order_by(models.Belt.id.desc()).first()
     if max_belt_id and person.belt_level_id >= max_belt_id[0]:
-        return "max_belt"
+        raise BadRequestError("Person is already at the highest belt level")
 
     # Increment the belt level
     person.belt_level_id += 1
@@ -54,22 +51,19 @@ def standard_promotion(db: Session, person_id: int, location_id:int, promotions_
 
 def tab_promotion(db: Session, person_id: int, location_id:int, promotion_date: datetime | None = None):
     person = db.query(models.Person).filter(models.Person.id == person_id).first()
-    #If the person does not exist, return an error
     if not person:
-        return "not_found"
-    
-    #If not a student, i.e. a parent with no belt level, return an error
-    if person.belt_level_id is None:
-        return "no_belt"
+        raise NotFoundError("Person", person_id)
 
-    # If promotions_date is not provided, use the current date
+    if person.belt_level_id is None:
+        raise BadRequestError("Person has no belt level assigned")
+
     if promotion_date is None:
         promotion_date = datetime.now()
 
     last_promotion = db.query(models.Promotions).filter(models.Promotions.student_id == person_id).order_by(models.Promotions.id.desc(), models.Promotions.promotion_date.desc()).first()
 
     if last_promotion is None:
-        return "no_previous_promotion"
+        raise BadRequestError("Person has no previous promotion record")
 
     # Log promotion
     promotion = models.Promotions(
@@ -87,9 +81,8 @@ def tab_promotion(db: Session, person_id: int, location_id:int, promotion_date: 
 
 def set_belt(db: Session, person_id: int, belt_toset_id: int, tabs_toset: int, location_id: int, promotion_date: datetime | None = None):
     person = db.query(models.Person).filter(models.Person.id == person_id).first()
-    #If the person does not exist, return an error
     if not person:
-        return "not_found"
+        raise NotFoundError("Person", person_id)
 
     # If promotions_date is not provided, use the current date
     if promotion_date is None:
@@ -112,7 +105,7 @@ def set_belt(db: Session, person_id: int, belt_toset_id: int, tabs_toset: int, l
 def remove_promotion(db: Session, promotion_id: int):
     promotion = db.query(models.Promotions).filter(models.Promotions.id == promotion_id).first()
     if not promotion:
-        return "not_found"
+        raise NotFoundError("Promotion", promotion_id)
     
     student_id = promotion.student_id
 
@@ -166,7 +159,7 @@ def enroll_person(db: Session, person: schemas.PersonCreate) -> models.Person:
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Enrollment failed: {str(e)}")
+        raise BadRequestError(f"Enrollment failed: {str(e)}")
     
 def create_class(db: Session, class_: schemas.ClassCreate) -> models.Class:
     try:
@@ -191,22 +184,18 @@ def create_class(db: Session, class_: schemas.ClassCreate) -> models.Class:
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Class creation failed: {str(e)}"
-        )
+        raise BadRequestError(f"Class creation failed: {str(e)}")
 
 def update_person(db: Session, person_id: int, person_update: schemas.PersonUpdate) -> models.Person:
     try:
         db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
         if not db_person:
-            raise HTTPException(status_code=404, detail="Person not found")
+            raise NotFoundError("Person", person_id)
 
         update_data = person_update.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_person, key, value)
 
-        # Set modified date
         db_person.modified_at = datetime.now()
 
         db.add(db_person)
@@ -217,7 +206,7 @@ def update_person(db: Session, person_id: int, person_update: schemas.PersonUpda
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
+        raise BadRequestError(f"Update failed: {str(e)}")
 
 def create_location(db: Session, location: schemas.LocationCreate) -> models.Location:
     db_location = models.Location(**location.model_dump())
@@ -248,16 +237,13 @@ def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Event creation failed: {str(e)}"
-        )
+        raise BadRequestError(f"Event creation failed: {str(e)}")
     
 def delete_event(db: Session, event_id: int):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not event:
-        return "not_found"
-    
+        raise NotFoundError("Event", event_id)
+
     db.delete(event)
     db.commit()
     return event
@@ -265,7 +251,7 @@ def delete_event(db: Session, event_id: int):
 def delete_class(db: Session, class_id: int):
     class_ = db.query(models.Class).filter(models.Class.id == class_id).first()
     if not class_:
-        return "not_found"
+        raise NotFoundError("Class", class_id)
 
     db.delete(class_)
     db.commit()
@@ -277,7 +263,7 @@ def get_user_by_email(db: Session, email: str):
 def update_user_role(db: Session, user_id: uuid.UUID, new_role: str):
     user = db.query(models.Users).filter(models.Users.id == user_id).first()
     if not user:
-        return "not_found"
+        raise NotFoundError("User", user_id)
     user.role = new_role
     db.commit()
     db.refresh(user)
@@ -287,7 +273,7 @@ def update_class(db: Session, class_id: int, class_: schemas.ClassUpdate) -> mod
     try:
         db_class = db.query(models.Class).filter(models.Class.id == class_id).first()
         if not db_class:
-            raise HTTPException(status_code=404, detail="Class not found")
+            raise NotFoundError("Class", class_id)
 
         update_data = class_.model_dump(exclude_unset=True, exclude={"age_categories"})
         for key, value in update_data.items():
@@ -323,62 +309,40 @@ def update_class(db: Session, class_id: int, class_: schemas.ClassUpdate) -> mod
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Update failed: {str(e)}")
-    
-from fastapi import HTTPException, status
+        raise BadRequestError(f"Update failed: {str(e)}")
 
 def create_award(db: Session, award: schemas.AwardCreate) -> models.Award:
     """
     Create a new award.
     Automatically pulls current rank from person table if rank_at_time is not provided.
     """
-    # Check if person exists
     person = db.query(models.Person).filter(models.Person.id == award.person).first()
     if not person:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Person not found"
-        )
-    
-    # If rank_at_time is not provided, use person's current belt level
+        raise NotFoundError("Person", award.person)
+
     rank_at_time = award.rank_at_time
     if rank_at_time is None:
         if person.belt_level_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Person has no belt level assigned"
-            )
+            raise BadRequestError("Person has no belt level assigned")
         rank_at_time = person.belt_level_id
-    
-    # Check if award_type exists
+
     award_type = db.query(models.AwardType).filter(
         models.AwardType.id == award.award_type
     ).first()
     if not award_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Award type not found"
-        )
-    
-    # Check if event exists (if provided)
+        raise NotFoundError("Award type", award.award_type)
+
     if award.event is not None:
         event = db.query(models.Event).filter(models.Event.id == award.event).first()
         if not event:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event not found"
-            )
-    
-    # Check if tournament_category exists (if provided)
+            raise NotFoundError("Event", award.event)
+
     if award.tournament_category is not None:
         category = db.query(models.TournamentCategory).filter(
             models.TournamentCategory.id == award.tournament_category
         ).first()
         if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tournament category not found"
-            )
+            raise NotFoundError("Tournament category", award.tournament_category)
     
     # Create the award
     new_award = models.Award(
@@ -400,75 +364,53 @@ def update_award(db: Session, award_id: int, award_update: schemas.AwardUpdate) 
     Update an existing award.
     Only updates fields that are provided (not None).
     """
-    # Find the award
     award = db.query(models.Award).filter(models.Award.id == award_id).first()
     if not award:
-        raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Award not found"
-            )
-    
-    # Get update data (only fields that were set)
+        raise NotFoundError("Award", award_id)
+
     update_data = award_update.model_dump(exclude_unset=True)
-    
-    # Validate references if they're being updated
+
     if "person" in update_data:
         person = db.query(models.Person).filter(
             models.Person.id == update_data["person"]
         ).first()
         if not person:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Person not found"
-            )
-    
+            raise NotFoundError("Person", update_data["person"])
+
     if "award_type" in update_data:
         award_type = db.query(models.AwardType).filter(
             models.AwardType.id == update_data["award_type"]
         ).first()
         if not award_type:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Award type not found"
-            )
-    
+            raise NotFoundError("Award type", update_data["award_type"])
+
     if "rank_at_time" in update_data and update_data["rank_at_time"] is not None:
         belt = db.query(models.Belt).filter(
             models.Belt.id == update_data["rank_at_time"]
         ).first()
         if not belt:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Belt not found"
-            )
-    
+            raise NotFoundError("Belt", update_data["rank_at_time"])
+
     if "event" in update_data and update_data["event"] is not None:
         event = db.query(models.Event).filter(
             models.Event.id == update_data["event"]
         ).first()
         if not event:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Event not found"
-            )
-    
+            raise NotFoundError("Event", update_data["event"])
+
     if "tournament_category" in update_data and update_data["tournament_category"] is not None:
         category = db.query(models.TournamentCategory).filter(
             models.TournamentCategory.id == update_data["tournament_category"]
         ).first()
         if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tournament category not found"
-            )
-    
-    # Apply updates
+            raise NotFoundError("Tournament category", update_data["tournament_category"])
+
     for field, value in update_data.items():
         setattr(award, field, value)
-    
+
     db.commit()
     db.refresh(award)
-    
+
     return award
 
 
@@ -478,11 +420,11 @@ def delete_award(db: Session, award_id: int):
     """
     award = db.query(models.Award).filter(models.Award.id == award_id).first()
     if not award:
-        return "not_found"
-    
+        raise NotFoundError("Award", award_id)
+
     db.delete(award)
     db.commit()
-    
+
     return award
 
 def get_contacts_by_user(db: Session, user_id: uuid.UUID) -> List[models.Contact]:
